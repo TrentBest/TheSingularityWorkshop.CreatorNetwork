@@ -32,8 +32,8 @@ app.MapGet("/v1/channels/{publicationId}", async Task<IResult> (
     if (document is null)
         return Results.NotFound(new { error = "publication.not_found", publicationId });
 
-    context.Response.Headers.ETag = document.ETag;
-    if (context.Request.Headers.IfNoneMatch.Any(value => string.Equals(value, document.ETag, StringComparison.Ordinal)))
+    context.Response.Headers["ETag"] = document.ETag;
+    if (context.Request.Headers["If-None-Match"].Any(value => string.Equals(value, document.ETag, StringComparison.Ordinal)))
         return Results.StatusCode(StatusCodes.Status304NotModified);
 
     return Results.Bytes(document.JsonBytes, "application/json; charset=utf-8");
