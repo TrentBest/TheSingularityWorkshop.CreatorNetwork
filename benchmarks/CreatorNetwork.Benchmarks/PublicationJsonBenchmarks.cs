@@ -36,13 +36,13 @@ public class PublicationJsonBenchmarks
     public byte[] SerializeSmallManifest() => JsonSerializer.SerializeToUtf8Bytes(_small, _options);
 
     [Benchmark]
-    public byte[] DeserializeSmallManifest() =>
+    public ChannelPublication DeserializeSmallManifest() =>
         JsonSerializer.Deserialize<ChannelPublication>(_smallJson, _options)!;
 
     [Benchmark]
     public byte[] SerializeHundredItemManifest() => JsonSerializer.SerializeToUtf8Bytes(_hundredItems, _options);
 
     [Benchmark]
-    public object DeserializeHundredItemManifest() =>
+    public ChannelPublication DeserializeHundredItemManifest() =>
         JsonSerializer.Deserialize<ChannelPublication>(_hundredItemsJson, _options)!;
 }
