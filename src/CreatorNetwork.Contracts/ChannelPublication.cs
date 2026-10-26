@@ -30,8 +30,19 @@ public sealed class ChannelPublication
         Visibility = visibility ?? string.Empty;
         Revision = revision;
         UpdatedAt = updatedAt;
-        Content = content ?? Array.Empty<ContentReference>();
+        Content = Snapshot(content);
         Attribution = attribution;
+    }
+
+    private static IReadOnlyList<ContentReference> Snapshot(IReadOnlyList<ContentReference>? content)
+    {
+        if (content is null || content.Count == 0)
+            return Array.Empty<ContentReference>();
+
+        var snapshot = new ContentReference[content.Count];
+        for (int i = 0; i < snapshot.Length; i++)
+            snapshot[i] = content[i];
+        return Array.AsReadOnly(snapshot);
     }
 
     /// <summary>Versioned schema identifier; unknown versions must be rejected or explicitly handled.</summary>
@@ -50,7 +61,7 @@ public sealed class ChannelPublication
     public long Revision { get; }
     /// <summary>Timestamp for this revision in UTC.</summary>
     public DateTimeOffset UpdatedAt { get; }
-    /// <summary>Content references included in the channel, in display order.</summary>
+    /// <summary>Content references included in the channel, in display order. The list is a defensive read-only snapshot.</summary>
     public IReadOnlyList<ContentReference> Content { get; }
     /// <summary>Optional attribution or rights statement; not a substitute for rights verification.</summary>
     public string? Attribution { get; }
