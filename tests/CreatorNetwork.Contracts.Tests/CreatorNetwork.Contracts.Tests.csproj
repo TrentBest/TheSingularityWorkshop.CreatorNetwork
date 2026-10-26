@@ -17,5 +17,6 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="../../src/CreatorNetwork.Contracts/CreatorNetwork.Contracts.csproj" />
+    <ProjectReference Include="../../src/CreatorNetwork.Node/CreatorNetwork.Node.csproj" />
   </ItemGroup>
 </Project>
