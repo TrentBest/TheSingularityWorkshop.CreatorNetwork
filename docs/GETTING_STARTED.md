@@ -4,9 +4,9 @@
 
 The first milestone proves creator portability end to end. It should not attempt to ship a complete social network, video editor, streaming platform, or recommendation engine.
 
-> **Current status:** the portable contract models and validation tests are implemented. The Creator Node, publisher, independent consumer, and export/import workflow are not implemented yet.
+> **Current status:** portable contracts, validation tests, and a loopback-only file-backed Creator Node prototype exist. Independent publisher/consumer applications and export/import are still in progress. The Node is for local development only, not a production multi-user host.
 
-## Run the contract tests
+## 1. Run the tests
 
 With the .NET 8 SDK installed, from the repository root:
 
@@ -14,22 +14,80 @@ With the .NET 8 SDK installed, from the repository root:
 dotnet test tests/CreatorNetwork.Contracts.Tests/CreatorNetwork.Contracts.Tests.csproj -c Release
 ```
 
-The tests exercise valid manifests, unsupported schema versions, actionable validation errors, and defensive snapshot behavior. This validates the contract library only; it does not claim that the end-to-end network slice is complete.
+This covers manifest validation and file-store persistence. It does not claim that the full network slice is complete.
 
-## The intended outcome
+## 2. Start the local Creator Node
 
-A creator publishes a channel and media reference. A separate client discovers and displays that publication. The creator exports it and imports it into a different host without changing the creator identity.
+```bash
+dotnet run -c Release --project src/CreatorNetwork.Node
+```
 
-## The six steps
+The service binds to `127.0.0.1:5080` only. Its default data directory is `.creatornetwork-data` in the current working directory. Set `CREATORNETWORK_DATA` to choose another local directory.
 
-1. **Create an identity.** Establish a stable creator identifier that is not simply the username at one host.
-2. **Publish a channel.** Write a versioned manifest with title, description, attribution, visibility declaration, and media references.
-3. **Serve it from a Creator Node.** Start with a local implementation, then serve the same records over HTTPS.
-4. **Consume it independently.** A separate client loads the manifest and renders the channel without relying on a private in-process object graph.
-5. **Export and import.** Export the manifest and metadata, inventory referenced media, and import to a second origin.
-6. **Verify continuity.** Confirm the creator identity remains stable and the second client can render the imported publication.
+Check health:
 
-## Acceptance criteria
+```bash
+curl http://127.0.0.1:5080/health
+```
+
+## 3. Publish a channel manifest
+
+In a second terminal, save this sample as `channel.json`:
+
+```json
+{
+  "schema": "creator-network.channel/1",
+  "publicationId": "demo-channel",
+  "creator": {
+    "id": "creator:demo",
+    "displayName": "Demo Creator",
+    "profileUri": null
+  },
+  "title": "My first portable channel",
+  "description": "A local CreatorNetwork proof.",
+  "visibility": "public",
+  "revision": 1,
+  "updatedAt": "2026-10-26T00:00:00Z",
+  "content": [
+    {
+      "id": "content:sample-video",
+      "mediaType": "video/mp4",
+      "lengthBytes": 0,
+      "sha256": null,
+      "sourceUri": "https://example.test/sample.mp4"
+    }
+  ],
+  "attribution": "Replace with the actual asset attribution."
+}
+```
+
+Publish it to the local node:
+
+```bash
+curl -i -X PUT http://127.0.0.1:5080/v1/channels/demo-channel \
+  -H "Content-Type: application/json" \
+  --data-binary @channel.json
+```
+
+A successful write returns `204 No Content`. The media URL is an example reference, not a real asset and not a claim that the media has been downloaded or verified.
+
+## 4. Read the publication
+
+```bash
+curl -i http://127.0.0.1:5080/v1/channels/demo-channel
+```
+
+The response includes an ETag. Send it back with `If-None-Match` to test conditional reads; an unchanged manifest returns `304 Not Modified`. The node caches validated manifest objects, serialized response bytes, and ETags in memory to avoid repeated disk reads and JSON serialization on the hot path.
+
+## What this prototype does—and does not—guarantee
+
+- It validates schema, identity references, revision, visibility declaration, timestamp, and content metadata.
+- It stores metadata locally and atomically replaces a manifest file.
+- It does **not** serve media bytes, enforce private/unlisted authorization, prove creator ownership, sign manifests, or provide a production authentication boundary.
+- It is bound to loopback and has no authentication. **Do not expose it to a network or use it for real private content.**
+- Metadata portability is not media-byte portability. Export/import and independent-client acceptance tests remain required.
+
+## End-to-end acceptance criteria
 
 - Publisher and consumer are separate programs or processes.
 - Publication uses a documented, versioned contract.
@@ -40,15 +98,9 @@ A creator publishes a channel and media reference. A separate client discovers a
 - At least two origins can serve the same publication contract.
 - A showcase experience consumes the publication through the contract rather than embedding content directly.
 
-## Keep the first implementation portable
-
-Use local files for the initial development store and HTTP(S) for the first network boundary. Avoid requiring cloud credentials, a particular database, or one media provider just to run the sample. A small openly licensed test asset or synthetic fixture is sufficient.
-
-A creator computer is not automatically a dependable public origin. Public service needs reachable hosting, a relay, or another explicit availability plan. Keep that fact visible in sample documentation.
-
 ## What comes after the slice
 
-After the portability proof works, add one concern at a time: signed publications, explicit permission enforcement, multiple discovery providers, subscription export, media replication, and improved streaming. Each addition should have a concrete consumer and a testable contract.
+After the portability proof works, add signed publications, explicit permission enforcement, multiple discovery providers, subscription export, media replication, and improved streaming. Each addition needs a concrete consumer and a testable contract.
 
 ---
 
