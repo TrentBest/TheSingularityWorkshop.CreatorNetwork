@@ -13,6 +13,7 @@ Use this index to find the right level of explanation. The README introduces the
 | Follow the intended end-to-end proof | [Getting Started](docs/GETTING_STARTED.md) |
 | Compare interoperability approaches | [Interoperability](docs/INTEROPERABILITY.md) |
 | Understand security, trust, and moderation limits | [Security and Trust](docs/SECURITY_AND_TRUST.md) |
+| Understand how performance is measured | [Performance](docs/PERFORMANCE.md) |
 | Contribute without breaking boundaries | [Development](docs/DEVELOPMENT.md) |
 
 ## The central model
