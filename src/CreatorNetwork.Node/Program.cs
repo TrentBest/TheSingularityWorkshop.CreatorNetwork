@@ -1,4 +1,3 @@
-using System.Security.Cryptography;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using CreatorNetwork.Contracts;
@@ -9,7 +8,7 @@ builder.WebHost.UseUrls("http://127.0.0.1:5080");
 
 var dataDirectory = Environment.GetEnvironmentVariable("CREATORNETWORK_DATA");
 if (string.IsNullOrWhiteSpace(dataDirectory))
-    dataDirectory = Path.Combine(AppContext.BaseDirectory, "data");
+    dataDirectory = Path.Combine(Environment.CurrentDirectory, ".creatornetwork-data");
 
 var jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
 {
@@ -29,17 +28,15 @@ app.MapGet("/v1/channels/{publicationId}", async Task<IResult> (
     FilePublicationStore store,
     CancellationToken cancellationToken) =>
 {
-    ChannelPublication? publication = await store.GetAsync(publicationId, cancellationToken);
-    if (publication is null)
+    StoredPublication? document = await store.GetDocumentAsync(publicationId, cancellationToken);
+    if (document is null)
         return Results.NotFound(new { error = "publication.not_found", publicationId });
 
-    byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(publication, jsonOptions);
-    string etag = "\"" + Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant() + "\"";
-    context.Response.Headers.ETag = etag;
-    if (context.Request.Headers.IfNoneMatch.Any(value => string.Equals(value, etag, StringComparison.Ordinal)))
+    context.Response.Headers.ETag = document.ETag;
+    if (context.Request.Headers.IfNoneMatch.Any(value => string.Equals(value, document.ETag, StringComparison.Ordinal)))
         return Results.StatusCode(StatusCodes.Status304NotModified);
 
-    return Results.Bytes(bytes, "application/json; charset=utf-8");
+    return Results.Bytes(document.JsonBytes, "application/json; charset=utf-8");
 });
 
 app.MapPut("/v1/channels/{publicationId}", async Task<IResult> (
