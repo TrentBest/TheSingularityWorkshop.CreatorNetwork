@@ -33,7 +33,7 @@ With the .NET 8 SDK:
 ```bash
 dotnet test tests/CreatorNetwork.Contracts.Tests/CreatorNetwork.Contracts.Tests.csproj -c Release
 dotnet run -c Release --project src/CreatorNetwork.Node
-dotnet run -c Release --project benchmarks/CreatorNetwork.Benchmarks -- --filter '*PublicationValidationBenchmarks*'
+dotnet run -c Release --project benchmarks/CreatorNetwork.Benchmarks -- --filter '*'
 ```
 
 Benchmark details and rules are in [Performance](PERFORMANCE.md). The first benchmark run must be executed and preserved before a numeric baseline is claimed.
