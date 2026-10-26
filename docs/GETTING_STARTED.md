@@ -2,11 +2,21 @@
 
 # Getting Started: the first vertical slice
 
-The first milestone should prove creator portability end to end. It should not attempt to ship a complete social network, video editor, streaming platform, or recommendation engine.
+The first milestone proves creator portability end to end. It should not attempt to ship a complete social network, video editor, streaming platform, or recommendation engine.
 
-> **Status:** this is the intended proving path, not a claim that implementation code already exists.
+> **Current status:** the portable contract models and validation tests are implemented. The Creator Node, publisher, independent consumer, and export/import workflow are not implemented yet.
 
-## The outcome
+## Run the contract tests
+
+With the .NET 8 SDK installed, from the repository root:
+
+```bash
+dotnet test tests/CreatorNetwork.Contracts.Tests/CreatorNetwork.Contracts.Tests.csproj -c Release
+```
+
+The tests exercise valid manifests, unsupported schema versions, actionable validation errors, and defensive snapshot behavior. This validates the contract library only; it does not claim that the end-to-end network slice is complete.
+
+## The intended outcome
 
 A creator publishes a channel and media reference. A separate client discovers and displays that publication. The creator exports it and imports it into a different host without changing the creator identity.
 
@@ -30,7 +40,7 @@ A creator publishes a channel and media reference. A separate client discovers a
 - At least two origins can serve the same publication contract.
 - A showcase experience consumes the publication through the contract rather than embedding content directly.
 
-## Keep the first implementation boring
+## Keep the first implementation portable
 
 Use local files for the initial development store and HTTP(S) for the first network boundary. Avoid requiring cloud credentials, a particular database, or one media provider just to run the sample. A small openly licensed test asset or synthetic fixture is sufficient.
 
