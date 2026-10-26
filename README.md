@@ -11,7 +11,7 @@ CreatorNetwork is the foundation for a creator-owned internet: not another desti
 
 The repository now contains the first provider-neutral contract library, validation tests, a loopback-only file-backed Creator Node prototype, and named performance benchmarks. Independent publisher/consumer programs and the complete export/import path remain in progress; we distinguish working code from planned capabilities.
 
-**[Start with the concept](docs/THEORY.md) · [Understand the architecture](docs/ARCHITECTURE.md) · [First vertical slice](docs/GETTING_STARTED.md) · [Documentation index](DOCUMENTATION_INDEX.md)**
+**[Start with the concept](docs/THEORY.md) · [Understand the architecture](docs/ARCHITECTURE.md) · [First vertical slice](docs/GETTING_STARTED.md) · [Profiles integration](docs/PROFILES_INTEGRATION.md) · [Documentation index](DOCUMENTATION_INDEX.md)**
 
 ## 🟣 01 — Why CreatorNetwork?
 
@@ -40,13 +40,14 @@ The publication contract is the portable center. Storage, discovery, delivery, a
 
 | Component | Responsibility |
 |---|---|
-| **CreatorNetwork** | Creator identity boundaries, publication contracts, portable references, permissions, discovery interfaces, migration/export. |
+| **CreatorNetwork** | Portable publishing contracts, creator-facing identity references, content references, discovery interfaces, and migration/export. |
+| [Profiles](https://github.com/TrentBest/TheSingularityWorkshop.Profiles) | Shared domain semantics for entities, claims, relationships, and observer-specific disclosure. CreatorNetwork wire contracts carry only the approved publication-safe projection; they do not replace or serialize a full Profile. |
 | [MicroBundleDomain](https://github.com/TrentBest/TheSingularityWorkshop.MicroBundleDomain) | Domain contracts for independently meaningful MicroBundles. CreatorNetwork may reference this model where it fits; it does not redefine it. |
 | [FSM_COS](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS) | Resolves and assembles runtime capabilities for a host. It is not the creator registry, media host, or recommendation authority. |
 | Experiences and application hosts | Demonstrate and present publications; they consume CreatorNetwork contracts rather than own the network. |
 | Media/storage providers | Store, replicate, transcode, and deliver media through replaceable provider boundaries. Executable artifact storage and media delivery remain distinct concerns. |
 
-**Core principle:** the creator owns the publication boundary; providers implement replaceable services; clients choose how to manifest the result.
+**Core principle:** Profiles owns profile meaning and disclosure semantics; CreatorNetwork owns publication semantics; providers implement replaceable services; clients choose how to manifest the result.
 
 ## 🟢 04 — See it in a minute
 
@@ -66,6 +67,7 @@ The contract models, validator, and local Creator Node prototype are implemented
 - **Understand the why:** [Theory](docs/THEORY.md).
 - **Understand ownership and boundaries:** [Architecture](docs/ARCHITECTURE.md).
 - **Follow the first proving path:** [Getting Started](docs/GETTING_STARTED.md).
+- **Integrate profile identity and disclosure safely:** [Profiles Integration](docs/PROFILES_INTEGRATION.md).
 - **Review protocol choices:** [Interoperability](docs/INTEROPERABILITY.md).
 - **Understand trust limits:** [Security and Trust](docs/SECURITY_AND_TRUST.md).
 - **Measure performance:** [Performance](docs/PERFORMANCE.md).
