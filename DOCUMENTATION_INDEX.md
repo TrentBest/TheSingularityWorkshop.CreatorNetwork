@@ -10,6 +10,7 @@ Use this index to find the right level of explanation. The README introduces the
 |---|---|
 | Understand the problem CreatorNetwork solves | [Theory](docs/THEORY.md) |
 | See who owns each responsibility | [Architecture](docs/ARCHITECTURE.md) |
+| Integrate profile identity and disclosure safely | [Profiles Integration](docs/PROFILES_INTEGRATION.md) |
 | Follow the intended end-to-end proof | [Getting Started](docs/GETTING_STARTED.md) |
 | Compare interoperability approaches | [Interoperability](docs/INTEROPERABILITY.md) |
 | Understand security, trust, and moderation limits | [Security and Trust](docs/SECURITY_AND_TRUST.md) |
@@ -18,7 +19,7 @@ Use this index to find the right level of explanation. The README introduces the
 
 ## The central model
 
-CreatorNetwork separates **identity**, **publication**, **content storage**, **discovery**, **delivery**, and **presentation**. The creator’s portable publication connects them; no one provider is required to own every stage.
+CreatorNetwork separates **profile semantics**, **portable publication**, **content storage**, **discovery**, **delivery**, and **presentation**. The Profiles domain describes entities and observer-specific disclosure; CreatorNetwork publishes only an approved projection of that information alongside versioned publication metadata. No one provider is required to own every stage.
 
 ## Documentation quality rule
 
