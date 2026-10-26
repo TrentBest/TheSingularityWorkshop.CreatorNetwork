@@ -69,6 +69,30 @@ public sealed class PublicationValidatorTests
         Assert.Equal("publication.required", error.Code);
     }
 
+    [Fact]
+    public void ContentListIsSnapshottedAtConstruction()
+    {
+        var source = new List<ContentReference>
+        {
+            new("content:original", "video/mp4")
+        };
+        var publication = new ChannelPublication(
+            ChannelPublication.CurrentSchema,
+            "publication:snapshot",
+            new CreatorIdentity("creator:snapshot"),
+            "Snapshot",
+            null,
+            "public",
+            1,
+            DateTimeOffset.UtcNow,
+            source);
+
+        source.Add(new ContentReference("content:later", "video/mp4"));
+
+        Assert.Single(publication.Content);
+        Assert.Equal("content:original", publication.Content[0].Id);
+    }
+
     private static ChannelPublication ValidPublication(string? schema = null) =>
         new(
             schema ?? ChannelPublication.CurrentSchema,
