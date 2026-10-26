@@ -7,9 +7,9 @@
 
 **Creators should own their identity, publications, and audience relationships. Viewers should choose how they discover and experience them. Hosting and discovery providers should be replaceable.**
 
-CreatorNetwork is the proposed foundation for a creator-owned internet: not another destination that asks everyone to move into one platform, but interoperable contracts and reference implementations that let independent creators publish once and reach many clients without surrendering the relationship to a single platform.
+CreatorNetwork is the foundation for a creator-owned internet: not another destination that asks everyone to move into one platform, but interoperable contracts and reference implementations that let independent creators publish once and reach many clients without surrendering the relationship to a single platform.
 
-This repository is at its foundation stage. It establishes product boundaries, vocabulary, theory, and the first vertical slice before committing to a wire protocol or production media stack.
+The repository now contains the first provider-neutral contract library, validation tests, and named performance benchmarks. The complete publication → serve → consume → export/import path remains in progress; we distinguish working code from planned capabilities.
 
 **[Start with the concept](docs/THEORY.md) · [Understand the architecture](docs/ARCHITECTURE.md) · [First vertical slice](docs/GETTING_STARTED.md) · [Documentation index](DOCUMENTATION_INDEX.md)**
 
@@ -53,15 +53,13 @@ The publication contract is the portable center. Storage, discovery, delivery, a
 The first proof is intentionally smaller than a social network:
 
 1. Create a stable creator identity.
-2. Publish a channel manifest with metadata and a reference to one media item.
+2. Publish a versioned channel manifest with metadata and content references.
 3. Serve the publication from a local or HTTPS-backed Creator Node.
 4. Discover and render it from a separate client.
 5. Export the publication and move it to another host without changing creator identity.
 6. Consume the same publication from a separate Experience without hardcoding its content.
 
-The first implementation should prove portability before optimizing scale. Local storage and ordinary HTTPS are enough for the first slice; replication, adaptive streaming, caches, and peer-to-peer delivery can follow evidence rather than precede it.
-
-See [Getting Started](docs/GETTING_STARTED.md). Until runnable code exists, these are implementation goals—not claims that the workflow is already implemented.
+The contract models and validator are implemented. The runnable Creator Node and independent publisher/consumer are still to come; the six-step workflow is an acceptance target, not a claim that it already runs.
 
 ## 🟪 05 — Build the open network
 
@@ -70,9 +68,10 @@ See [Getting Started](docs/GETTING_STARTED.md). Until runnable code exists, thes
 - **Follow the first proving path:** [Getting Started](docs/GETTING_STARTED.md).
 - **Review protocol choices:** [Interoperability](docs/INTEROPERABILITY.md).
 - **Understand trust limits:** [Security and Trust](docs/SECURITY_AND_TRUST.md).
+- **Measure performance:** [Performance](docs/PERFORMANCE.md).
 - **Contribute deliberately:** [Development](docs/DEVELOPMENT.md) and [Documentation Index](DOCUMENTATION_INDEX.md).
 
-Keep the portable contract layer dependency-light. Provider-specific integrations belong behind explicit interfaces and must not force every creator or client to use the same vendor.
+Keep the portable contract layer dependency-light. Provider-specific integrations belong behind explicit interfaces and must not force every creator or client to use the same vendor. Performance improvements should be measured against stable workloads, with allocations and end-to-end latency considered alongside throughput.
 
 ---
 
