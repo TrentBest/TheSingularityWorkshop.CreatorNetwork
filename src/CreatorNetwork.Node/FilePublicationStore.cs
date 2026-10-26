@@ -7,14 +7,14 @@ using CreatorNetwork.Contracts;
 namespace CreatorNetwork.Node;
 
 /// <summary>
-/// Local-demo store. It caches reads in memory and atomically replaces one manifest file per publication.
+/// Local-demo store. It caches validated models, serialized bytes, and ETags, and atomically replaces manifest files.
 /// This implementation is intentionally bound to loopback and is not a production multi-user host.
 /// </summary>
 public sealed class FilePublicationStore
 {
     private readonly string _directory;
     private readonly JsonSerializerOptions _jsonOptions;
-    private readonly ConcurrentDictionary<string, ChannelPublication> _cache = new(StringComparer.Ordinal);
+    private readonly ConcurrentDictionary<string, StoredPublication> _cache = new(StringComparer.Ordinal);
     private readonly ConcurrentDictionary<string, SemaphoreSlim> _writeLocks = new(StringComparer.Ordinal);
 
     public FilePublicationStore(string directory, JsonSerializerOptions jsonOptions)
@@ -26,25 +26,29 @@ public sealed class FilePublicationStore
 
     public async Task<ChannelPublication?> GetAsync(string publicationId, CancellationToken cancellationToken)
     {
-        if (_cache.TryGetValue(publicationId, out ChannelPublication? cached))
+        StoredPublication? document = await GetDocumentAsync(publicationId, cancellationToken);
+        return document?.Publication;
+    }
+
+    internal async Task<StoredPublication?> GetDocumentAsync(string publicationId, CancellationToken cancellationToken)
+    {
+        if (_cache.TryGetValue(publicationId, out StoredPublication? cached))
             return cached;
 
         string path = GetPath(publicationId);
         if (!File.Exists(path))
             return null;
 
-        await using var stream = new FileStream(
-            path, FileMode.Open, FileAccess.Read, FileShare.Read,
-            bufferSize: 16 * 1024, FileOptions.Asynchronous | FileOptions.SequentialScan);
-        ChannelPublication? publication = await JsonSerializer.DeserializeAsync<ChannelPublication>(
-            stream, _jsonOptions, cancellationToken);
+        byte[] bytes = await File.ReadAllBytesAsync(path, cancellationToken);
+        ChannelPublication? publication = JsonSerializer.Deserialize<ChannelPublication>(bytes, _jsonOptions);
 
         if (publication is null ||
             !string.Equals(publication.PublicationId, publicationId, StringComparison.Ordinal) ||
             PublicationValidator.Validate(publication).Count != 0)
             throw new InvalidDataException("Stored publication is invalid or does not match its requested identifier.");
 
-        return _cache.GetOrAdd(publicationId, publication);
+        var loaded = new StoredPublication(publication, bytes);
+        return _cache.GetOrAdd(publicationId, loaded);
     }
 
     public async Task PutAsync(ChannelPublication publication, CancellationToken cancellationToken)
@@ -55,6 +59,7 @@ public sealed class FilePublicationStore
         try
         {
             byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(publication, _jsonOptions);
+            var document = new StoredPublication(publication, bytes);
             string targetPath = GetPath(id);
             string temporaryPath = targetPath + "." + Guid.NewGuid().ToString("N") + ".tmp";
 
@@ -69,7 +74,7 @@ public sealed class FilePublicationStore
                 }
 
                 File.Move(temporaryPath, targetPath, overwrite: true);
-                _cache[id] = publication;
+                _cache[id] = document;
             }
             finally
             {
@@ -89,4 +94,18 @@ public sealed class FilePublicationStore
         string fileName = Convert.ToHexString(SHA256.HashData(idBytes)).ToLowerInvariant() + ".json";
         return Path.Combine(_directory, fileName);
     }
+}
+
+internal sealed class StoredPublication
+{
+    public StoredPublication(ChannelPublication publication, byte[] jsonBytes)
+    {
+        Publication = publication;
+        JsonBytes = jsonBytes;
+        ETag = "\"" + Convert.ToHexString(SHA256.HashData(jsonBytes)).ToLowerInvariant() + "\"";
+    }
+
+    public ChannelPublication Publication { get; }
+    public byte[] JsonBytes { get; }
+    public string ETag { get; }
 }
