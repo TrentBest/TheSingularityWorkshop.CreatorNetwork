@@ -1,5 +1,4 @@
 using System.Security.Cryptography;
-using System.Text;
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using CreatorNetwork.Contracts;
@@ -24,7 +23,7 @@ var app = builder.Build();
 
 app.MapGet("/health", () => Results.Ok(new { status = "local-demo", storage = "file-backed" }));
 
-app.MapGet("/v1/channels/{publicationId}", async (
+app.MapGet("/v1/channels/{publicationId}", async Task<IResult> (
     string publicationId,
     HttpContext context,
     FilePublicationStore store,
@@ -43,7 +42,7 @@ app.MapGet("/v1/channels/{publicationId}", async (
     return Results.Bytes(bytes, "application/json; charset=utf-8");
 });
 
-app.MapPut("/v1/channels/{publicationId}", async (
+app.MapPut("/v1/channels/{publicationId}", async Task<IResult> (
     string publicationId,
     ChannelPublication publication,
     FilePublicationStore store,
