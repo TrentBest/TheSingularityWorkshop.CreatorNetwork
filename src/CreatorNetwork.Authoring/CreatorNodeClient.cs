@@ -71,6 +71,67 @@ public sealed class CreatorNodeClient
         return descriptor;
     }
 
+    /// <summary>
+    /// Downloads an asset from this Node and verifies the received byte count and SHA-256
+    /// against a previously trusted finalized descriptor. Bytes are streamed; the whole
+    /// asset is never buffered in memory. If verification fails, the destination may already
+    /// contain partial or untrusted bytes and should be discarded by the caller.
+    /// </summary>
+    public async Task DownloadVerifiedAsync(
+        MediaAssetDescriptor expected,
+        Stream destination,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(expected);
+        ArgumentNullException.ThrowIfNull(destination);
+        ValidateAssetId(expected.AssetId);
+        if (!destination.CanWrite)
+            throw new ArgumentException("The destination stream must be writable.", nameof(destination));
+        if (expected.LengthBytes < 0 || !IsSha256(expected.Sha256))
+            throw new ArgumentException("A valid finalized descriptor with a byte length and SHA-256 is required.", nameof(expected));
+
+        using var request = new HttpRequestMessage(HttpMethod.Get, AssetUri(expected.AssetId));
+        using HttpResponseMessage response = await _httpClient.SendAsync(
+            request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+        string? responseType = response.Content.Headers.ContentType?.MediaType;
+        if (responseType is not null &&
+            !string.Equals(responseType, expected.MediaType, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException($"The Node returned media type '{responseType}', expected '{expected.MediaType}'.");
+
+        string? etag = response.Headers.ETag?.Tag;
+        if (!string.IsNullOrWhiteSpace(etag) &&
+            etag.StartsWith("\"sha256-", StringComparison.Ordinal) && etag.EndsWith("\"", StringComparison.Ordinal))
+        {
+            string etagDigest = etag[8..^1];
+            if (!string.Equals(etagDigest, expected.Sha256, StringComparison.OrdinalIgnoreCase))
+                throw new InvalidDataException("The Node's ETag digest does not match the expected asset descriptor.");
+        }
+
+        await using Stream source = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false);
+        using var hash = System.Security.Cryptography.IncrementalHash.CreateHash(
+            System.Security.Cryptography.HashAlgorithmName.SHA256);
+        byte[] buffer = new byte[64 * 1024];
+        long totalBytes = 0;
+        while (true)
+        {
+            int read = await source.ReadAsync(buffer.AsMemory(0, buffer.Length), cancellationToken).ConfigureAwait(false);
+            if (read == 0)
+                break;
+
+            totalBytes = checked(totalBytes + read);
+            hash.AppendData(buffer, 0, read);
+            await destination.WriteAsync(buffer.AsMemory(0, read), cancellationToken).ConfigureAwait(false);
+        }
+
+        string actualDigest = Convert.ToHexString(hash.GetHashAndReset()).ToLowerInvariant();
+        if (totalBytes != expected.LengthBytes)
+            throw new InvalidDataException($"Downloaded {totalBytes} bytes, expected {expected.LengthBytes}.");
+        if (!string.Equals(actualDigest, expected.Sha256, StringComparison.OrdinalIgnoreCase))
+            throw new InvalidDataException("Downloaded media SHA-256 does not match the expected asset descriptor.");
+    }
+
     /// <summary>Publishes a manifest only when the caller explicitly invokes this method.</summary>
     public async Task PublishAsync(ChannelPublication publication, CancellationToken cancellationToken = default)
     {
