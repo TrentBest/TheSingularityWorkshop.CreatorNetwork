@@ -18,7 +18,9 @@ This document describes the intended system boundary. It distinguishes portable 
 | Discovery provider | Indexing, search, feeds, recommendations under a declared policy | Exclusive authority over which publications exist |
 | Subscription relationship | User-controlled relationship, with consent and privacy constraints | An unexportable provider-owned graph |
 | Client / manifestation | Playback, presentation, accessibility, interaction, user choice | Canonical ownership of publication |
-| Runtime composition | Assembles capabilities needed by a host when appropriate | Creator registry, media network, or universal recommendations |
+| Foundry | General Hub workflow validation, sequencing, cancellation, status, and structured outcomes when CreatorNetwork operations are invoked as a Hub workflow | CreatorNetwork's domain data, publication rules, or media storage |
+| GUI | Optional presentation when a host chooses to present a workflow or publication | Workflow execution, authoritative run state, or mandatory presentation for headless use |
+| FSM_COS | Resolves and assembles MicroBundle-based runtime capabilities when a host needs composition | General Hub workflow execution, creator registry, media network, or universal recommendations |
 
 These are logical boundaries, not a mandate for one package or service per row. Keep the first implementation small until a real consumer proves that a boundary needs independent deployment or versioning.
 
@@ -41,7 +43,18 @@ CreatorNetwork must not fork Profiles' domain semantics or treat a publication D
 
 See [Profiles Integration](PROFILES_INTEGRATION.md) for the mapping flow and acceptance checks.
 
-## 4. Contract before implementation
+## 4. Foundry owns general workflow execution
+
+CreatorNetwork is a domain capability provider. It must not implement a second general-purpose workflow scheduler, run-state model, cancellation system, or generic orchestration engine.
+
+- CreatorNetwork owns domain operations such as validating a publication, ingesting an asset, publishing a manifest, and exporting content.
+- When a Hub-managed workflow needs to sequence those operations, Foundry owns workflow validation, sequencing, cancellation, status, and structured outcomes.
+- Any CreatorNetwork-to-Foundry integration should be a narrow registered handler/adapter over real, tested domain operations. Do not add a Foundry dependency merely to document the relationship, and do not invent handler APIs before the actual Foundry contract is verified.
+- CreatorNetwork remains usable independently and headlessly; Foundry is not required for direct domain use.
+- GUI is optional presentation selected by the host. It does not execute the workflow or own authoritative run state.
+- FSM_COS may assemble capabilities for a host, but composition is not a substitute for Foundry's workflow lifecycle.
+
+## 5. Contract before implementation
 
 The contracts must answer:
 
@@ -57,7 +70,7 @@ The contracts must answer:
 
 These questions do not justify inventing a custom cryptographic or federation protocol before evaluating existing standards.
 
-## 5. Control plane and media plane
+## 6. Control plane and media plane
 
 Publication metadata and media bytes have different needs.
 
@@ -66,22 +79,26 @@ Publication metadata and media bytes have different needs.
 
 The control plane should be compact, exportable, and versioned. The media plane should support ordinary web delivery first and allow specialized providers later. A reference to a video is not the video itself; metadata export is not proof that media is portable.
 
-## 6. Relationship to the Workshop ecosystem
+For the implementation-grounded HTTP/REST call-site classification and FSM_REST fit, see [HTTP and REST Ownership](HTTP_OWNERSHIP.md). The JSON publication operation is a REST integration candidate; media bytes remain on streaming-capable transport paths.
+
+## 7. Relationship to the Workshop ecosystem
 
 - **Profiles** provides the domain vocabulary for profile identity and observer-specific disclosure. CreatorNetwork uses an adapter rather than serializing private profile state into public manifests.
+- **Foundry** owns general Hub workflow execution and run lifecycle. CreatorNetwork exposes domain operations; it does not recreate orchestration.
+- **GUI** provides optional presentation chosen by the Hub/host; headless use must remain possible.
 - **FSM_COS** may assemble capabilities for a host that consumes CreatorNetwork; it should not absorb identity, publishing, discovery, or media responsibilities.
 - **MicroBundleDomain** remains authoritative for MicroBundle domain concepts. Use stable references and existing contracts where they add value.
 - **Experiences** can demonstrate creator channels and alternative discovery/presentation experiences. It is a consumer and showcase, not the owner of portable publication infrastructure.
 - **AnyApp, WebApp, and other hosts** can present the same publication differently.
 - **Media storage and delivery** are not the same problem as immutable executable MicroBundle artifact storage. Similar identity and integrity techniques may be reusable, but contracts and threat models differ.
 
-## 7. Reliability and migration
+## 8. Reliability and migration
 
 Migration should produce a portable export with a documented manifest and media inventory. Import validates the export, preserves identity references, reports unavailable assets, and avoids silently rewriting publication history. Content hashes help verify bytes but do not establish copyright ownership or permission to redistribute them.
 
 A local desktop process behind NAT is not automatically a reliable public server. Production availability requires reachable hosting, domain ownership, TLS, backups, replication, abuse response, monitoring, and recovery.
 
-## 8. Deliberate exclusions
+## 9. Deliberate exclusions
 
 CreatorNetwork is not a single official feed, mandatory centralized media host, complete creator studio, replacement for every existing social protocol, runtime composition kernel, executable artifact repository, or guarantee of anonymity, legal immunity, censorship resistance, or permanent availability.
 
