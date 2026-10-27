@@ -1,0 +1,71 @@
+name: CreatorNetwork CI
+
+on:
+  push:
+    branches: [development, master]
+  pull_request:
+    branches: [development, master]
+  workflow_dispatch:
+    inputs:
+      run_benchmarks:
+        description: Run the full BenchmarkDotNet suite after build and tests
+        required: false
+        default: false
+        type: boolean
+
+permissions:
+  contents: read
+
+concurrency:
+  group: creator-network-ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build-and-test:
+    name: Build and test (.NET 8)
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Restore and test contracts, authoring, and node
+        run: dotnet test tests/CreatorNetwork.Contracts.Tests/CreatorNetwork.Contracts.Tests.csproj --configuration Release --logger "trx;LogFileName=contracts-tests.trx"
+      - name: Restore and test Profiles integration
+        run: dotnet test tests/CreatorNetwork.Profiles.Tests/CreatorNetwork.Profiles.Tests.csproj --configuration Release --logger "trx;LogFileName=profiles-tests.trx"
+      - name: Build benchmarks
+        run: dotnet build benchmarks/CreatorNetwork.Benchmarks/CreatorNetwork.Benchmarks.csproj --configuration Release --no-restore
+      - name: Upload test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: creator-network-test-results
+          path: |
+            **/TestResults/*.trx
+          if-no-files-found: warn
+
+  benchmarks:
+    name: BenchmarkDotNet (manual)
+    if: github.event_name == 'workflow_dispatch' && inputs.run_benchmarks
+    needs: build-and-test
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+      - name: Set up .NET
+        uses: actions/setup-dotnet@v4
+        with:
+          dotnet-version: 8.0.x
+      - name: Run benchmark suite
+        run: dotnet run --project benchmarks/CreatorNetwork.Benchmarks/CreatorNetwork.Benchmarks.csproj --configuration Release -- --filter '*'
+      - name: Upload BenchmarkDotNet results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: creator-network-benchmark-results
+          path: benchmarks/CreatorNetwork.Benchmarks/BenchmarkDotNet.Artifacts
+          if-no-files-found: warn
