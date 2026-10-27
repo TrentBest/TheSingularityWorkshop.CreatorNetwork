@@ -52,7 +52,7 @@ Use the digest from the upload response to compare the downloaded bytes. For lar
 
 The `CreatorNetwork.Authoring` project provides a small `.NET 8` client that can be reused by desktop/AnyApp hosts and server-side web hosts. It accepts an already-recorded stream, uploads it with bounded-memory streaming, returns the finalized descriptor, and can turn that descriptor into a portable `ContentReference`. Publication is a separate explicit call; uploading media does not silently publish it.
 
-`CreatorNodeClient.DownloadVerifiedAsync` provides the independent-consumer side of the loopback proof: supply the finalized descriptor and a writable destination stream, and it downloads from the configured Node while counting bytes and computing SHA-256. It rejects a media-type mismatch when the response supplies a type, checks a SHA-256 ETag when present, and rejects a final byte-length or digest mismatch. It streams with bounded memory; because verification completes after streaming, a failed download may have already written bytes to the destination, which must be discarded rather than treated as verified.
+`CreatorNodeClient.DownloadVerifiedAsync` provides the independent-consumer side of the loopback proof: supply the finalized descriptor and a writable destination stream, and it downloads from the configured Node while counting bytes and computing SHA-256. It rejects a media-type mismatch when the response supplies a type, checks a SHA-256 ETag when present, and rejects a final byte-length or digest mismatch. It streams with bounded memory; because verification completes after streaming, a failed download may have already written bytes to the destination, which must be discarded rather than treated as verified. `GetPublicationAsync` retrieves a channel manifest and validates its schema, required fields, and route identity before returning it. `DownloadVerifiedAsync(ContentReference, ...)` lets an independent consumer use a publication's content reference directly, but requires the reference to contain both length and SHA-256. It intentionally ignores `SourceUri`: a manifest location hint is not permission to fetch arbitrary origins, and it is not a content identity.
 
 A host should connect its capture adapter (for example, a UserIO-backed browser or desktop adapter) to this client:
 
@@ -102,7 +102,7 @@ A disconnected or cancelled upload should leave no finalized descriptor. Tempora
 
 - There is no authentication or authorization. **Do not expose this Node to a network.**
 - The asset store has a global size limit, not per-creator quotas or rate limits.
-- Storage is local and does not replicate or export assets to another host.
+- Storage is local and does not replicate or export assets to another host. The client can retrieve and verify assets for a consumer, but a complete supported export/import command and a second-host migration proof are still pending.
 - The store is append-only by asset ID in this prototype; replacing content requires a new asset ID.
 - Media bytes are not automatically linked into a channel manifest. A publisher must deliberately create a `ContentReference` using the returned descriptor and then publish the manifest.
 - The service does not capture media, transcode it, create thumbnails, implement resumable uploads, or provide live streaming.
