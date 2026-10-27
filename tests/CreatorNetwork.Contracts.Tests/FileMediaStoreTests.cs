@@ -144,14 +144,14 @@ public sealed class FileMediaStoreTests
         try
         {
             var store = new FileMediaStore(directory);
-            Task<CreatorNetwork.Contracts.MediaAssetDescriptor> first = store.PutAsync(
+            Task<MediaAssetDescriptor> first = store.PutAsync(
                 "asset:concurrent", "text/plain", new MemoryStream(Encoding.UTF8.GetBytes("first")),
                 null, null, CancellationToken.None);
-            Task<CreatorNetwork.Contracts.MediaAssetDescriptor> second = store.PutAsync(
+            Task<MediaAssetDescriptor> second = store.PutAsync(
                 "asset:concurrent", "text/plain", new MemoryStream(Encoding.UTF8.GetBytes("second")),
                 null, null, CancellationToken.None);
 
-            async Task<bool> IsAcceptedAsync(Task<CreatorNetwork.Contracts.MediaAssetDescriptor> upload)
+            async Task<bool> IsAcceptedAsync(Task<MediaAssetDescriptor> upload)
             {
                 try
                 {
