@@ -117,6 +117,65 @@ public sealed class FileMediaStoreTests
     }
 
     [Fact]
+    public async Task DeclaredLengthMismatchDoesNotFinalizeAsset()
+    {
+        string directory = NewDirectory();
+        try
+        {
+            var store = new FileMediaStore(directory);
+            byte[] bytes = Encoding.UTF8.GetBytes("length mismatch");
+
+            await Assert.ThrowsAsync<MediaAssetIntegrityException>(() => store.PutAsync(
+                "asset:wrong-length", "text/plain", new MemoryStream(bytes),
+                bytes.Length + 1, null, CancellationToken.None));
+
+            Assert.Null(await store.GetDescriptorAsync("asset:wrong-length", CancellationToken.None));
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task ConcurrentUploadsForOneIdFinalizeAtMostOneAsset()
+    {
+        string directory = NewDirectory();
+        try
+        {
+            var store = new FileMediaStore(directory);
+            Task<CreatorNetwork.Contracts.MediaAssetDescriptor> first = store.PutAsync(
+                "asset:concurrent", "text/plain", new MemoryStream(Encoding.UTF8.GetBytes("first")),
+                null, null, CancellationToken.None);
+            Task<CreatorNetwork.Contracts.MediaAssetDescriptor> second = store.PutAsync(
+                "asset:concurrent", "text/plain", new MemoryStream(Encoding.UTF8.GetBytes("second")),
+                null, null, CancellationToken.None);
+
+            async Task<bool> IsAcceptedAsync(Task<CreatorNetwork.Contracts.MediaAssetDescriptor> upload)
+            {
+                try
+                {
+                    await upload;
+                    return true;
+                }
+                catch (MediaAssetAlreadyExistsException)
+                {
+                    return false;
+                }
+            }
+
+            bool[] results = await Task.WhenAll(IsAcceptedAsync(first), IsAcceptedAsync(second));
+            Assert.Single(Array.FindAll(results, accepted => accepted));
+            Assert.Single(Array.FindAll(results, accepted => !accepted));
+            Assert.NotNull(await store.GetDescriptorAsync("asset:concurrent", CancellationToken.None));
+        }
+        finally
+        {
+            Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
     public async Task PathLikeAssetIdCannotEscapeStoreDirectory()
     {
         string directory = NewDirectory();
