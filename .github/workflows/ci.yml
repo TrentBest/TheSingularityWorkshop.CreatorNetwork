@@ -26,8 +26,14 @@ jobs:
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
-      - name: Checkout
+      - name: Checkout CreatorNetwork
         uses: actions/checkout@v4
+      - name: Checkout Profiles source dependency
+        uses: actions/checkout@v4
+        with:
+          repository: TrentBest/TheSingularityWorkshop.Profiles
+          ref: development
+          path: dependencies/TheSingularityWorkshop.Profiles
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
@@ -35,7 +41,7 @@ jobs:
       - name: Restore and test contracts, authoring, and node
         run: dotnet test tests/CreatorNetwork.Contracts.Tests/CreatorNetwork.Contracts.Tests.csproj --configuration Release --logger "trx;LogFileName=contracts-tests.trx"
       - name: Restore and test Profiles integration
-        run: dotnet test tests/CreatorNetwork.Profiles.Tests/CreatorNetwork.Profiles.Tests.csproj --configuration Release --logger "trx;LogFileName=profiles-tests.trx"
+        run: dotnet test tests/CreatorNetwork.Profiles.Tests/CreatorNetwork.Profiles.Tests.csproj --configuration Release -p:ProfilesProjectPath=dependencies/TheSingularityWorkshop.Profiles/TheSingularityWorkshop.Profiles.csproj --logger "trx;LogFileName=profiles-tests.trx"
       - name: Build benchmarks
         run: dotnet build benchmarks/CreatorNetwork.Benchmarks/CreatorNetwork.Benchmarks.csproj --configuration Release
       - name: Upload test results
