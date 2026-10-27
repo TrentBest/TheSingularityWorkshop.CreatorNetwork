@@ -21,9 +21,9 @@ CreatorNetwork starts with contracts and a proving slice. Keep the portable cont
 
 - `src/CreatorNetwork.Contracts`: provider-neutral .NET Standard 2.0 models and validation.
 - `src/CreatorNetwork.Node`: .NET 8 loopback-only file-backed prototype with in-memory response caching and conditional ETags.
-- `src/CreatorNetwork.Profiles`: .NET 8 source-integrated projection adapter; requires a local Profiles development checkout and does not perform authentication or authorization.
+- `src/CreatorNetwork.Profiles`: .NET 8 source-integrated publication adapter; requires a local Profiles development checkout. It checks the authenticated-principal flag, validates the audience ID, and delegates trusted persona resolution/disclosure to a host-owned resolver. It is not itself an authentication provider or authorization enforcement layer.
 - `tests/CreatorNetwork.Contracts.Tests`: contract validation and file-store persistence tests.
-- `tests/CreatorNetwork.Profiles.Tests`: focused adapter projection tests, pending execution against the dependency source checkout.
+- `tests/CreatorNetwork.Profiles.Tests`: focused projection and publication-boundary tests, pending execution against the dependency source checkout.
 - `benchmarks/CreatorNetwork.Benchmarks`: named BenchmarkDotNet validation workloads.
 
 The Node is a development prototype. It has no authentication or production privacy enforcement and must not be exposed to a network.
@@ -58,7 +58,7 @@ Benchmark details and rules are in [Performance](PERFORMANCE.md). A numeric base
 
 1. Contract models and validation.
 2. A local/file-backed Creator Node.
-3. Profiles host adapter and trusted publisher mapping.
+3. Profiles host adapter and concrete trusted publisher/persona resolver backed by the host's identity-link store.
 4. An independent publisher and consumer.
 5. Export/import with a media inventory.
 6. Cross-origin integration tests.
