@@ -1,0 +1,19 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>net8.0</TargetFramework>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+  </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="$(ProfilesProjectPath)" />
+    <ProjectReference Include="../CreatorNetwork.Contracts/CreatorNetwork.Contracts.csproj" />
+  </ItemGroup>
+  <Target Name="ValidateProfilesProjectPath" BeforeTargets="ResolveProjectReferences">
+    <Error Condition="'$(ProfilesProjectPath)' == ''"
+           Text="Set ProfilesProjectPath to the TheSingularityWorkshop.Profiles.csproj from its development checkout. This adapter intentionally builds against source rather than a NuGet package." />
+    <Error Condition="'$(ProfilesProjectPath)' != '' and !Exists('$(ProfilesProjectPath)')"
+           Text="ProfilesProjectPath does not exist: $(ProfilesProjectPath)" />
+  </Target>
+</Project>
