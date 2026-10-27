@@ -71,6 +71,100 @@ public sealed class CreatorNodeClientTests
     }
 
     [Fact]
+    public async Task DownloadVerifiedAsync_AcceptsPortableContentReferenceWithVerifiedMetadata()
+    {
+        byte[] bytes = Encoding.UTF8.GetBytes("portable media");
+        string digest = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+        var reference = new ContentReference(
+            "portable-asset", "audio/webm", bytes.Length, digest,
+            "https://untrusted.example/should-not-be-followed");
+        var handler = new RecordingHandler((request, _) =>
+        {
+            Assert.EndsWith("/v1/assets/portable-asset", request.RequestUri!.AbsoluteUri);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(bytes)
+            });
+        });
+        using var http = new HttpClient(handler);
+        var client = new CreatorNodeClient(http, new Uri("http://127.0.0.1:5080/"));
+        await using var destination = new MemoryStream();
+
+        await client.DownloadVerifiedAsync(reference, destination);
+
+        Assert.Equal(bytes, destination.ToArray());
+        Assert.Equal(1, handler.RequestCount);
+    }
+
+    [Fact]
+    public async Task DownloadVerifiedAsync_RejectsPortableReferenceWithoutIntegrityMetadata()
+    {
+        var reference = new ContentReference("portable-asset", "audio/webm", 10);
+        using var http = new HttpClient(new RecordingHandler((_, _) =>
+            Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK))));
+        var client = new CreatorNodeClient(http, new Uri("http://127.0.0.1:5080/"));
+
+        await Assert.ThrowsAsync<ArgumentException>(() =>
+            client.DownloadVerifiedAsync(reference, new MemoryStream()));
+    }
+
+    [Fact]
+    public async Task GetPublicationAsync_ReturnsOnlyMatchingValidatedManifest()
+    {
+        var publication = new ChannelPublication(
+            ChannelPublication.CurrentSchema,
+            "channel-verified",
+            new CreatorIdentity("creator-001"),
+            "Verified channel",
+            null,
+            "unlisted",
+            1,
+            DateTimeOffset.UtcNow,
+            new[] { new ContentReference("asset-001", "audio/webm", 4,
+                "0123456789abcdef0123456789abcdef0123456789abcdef0123456789abcdef") });
+        var handler = new RecordingHandler((request, _) =>
+        {
+            Assert.Equal(HttpMethod.Get, request.Method);
+            Assert.EndsWith("/v1/channels/channel-verified", request.RequestUri!.AbsoluteUri);
+            return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = JsonContent.Create(publication)
+            });
+        });
+        using var http = new HttpClient(handler);
+        var client = new CreatorNodeClient(http, new Uri("http://127.0.0.1:5080/"));
+
+        ChannelPublication result = await client.GetPublicationAsync("channel-verified");
+
+        Assert.Equal(publication.PublicationId, result.PublicationId);
+        Assert.Equal(publication.Content[0].Sha256, result.Content[0].Sha256);
+        Assert.Equal(1, handler.RequestCount);
+    }
+
+    [Fact]
+    public async Task GetPublicationAsync_RejectsManifestWithDifferentRouteIdentity()
+    {
+        var publication = new ChannelPublication(
+            ChannelPublication.CurrentSchema,
+            "different-channel",
+            new CreatorIdentity("creator-001"),
+            "Channel",
+            null,
+            "unlisted",
+            1,
+            DateTimeOffset.UtcNow);
+        var handler = new RecordingHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = JsonContent.Create(publication)
+        }));
+        using var http = new HttpClient(handler);
+        var client = new CreatorNodeClient(http, new Uri("http://127.0.0.1:5080/"));
+
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            client.GetPublicationAsync("requested-channel"));
+    }
+
+    [Fact]
     public async Task DownloadVerifiedAsync_RejectsDigestMismatch()
     {
         byte[] bytes = Encoding.UTF8.GetBytes("actual content");
