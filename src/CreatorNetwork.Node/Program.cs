@@ -78,7 +78,7 @@ app.MapPut("/v1/assets/{assetId}", async Task<IResult> (
     {
         return Results.Conflict(new { error = "asset.already_exists", assetId });
     }
-    catch (MediaAssetTooLargeException exception)
+    catch (MediaAssetTooLargeException)
     {
         return Results.StatusCode(StatusCodes.Status413PayloadTooLarge);
     }
