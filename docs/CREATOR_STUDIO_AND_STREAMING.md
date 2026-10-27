@@ -94,7 +94,7 @@ The first proving slice should prefer ordinary HTTPS media delivery and a simple
 
 ## What this boundary does not claim
 
-The current loopback-only Creator Node is a metadata prototype. It does not serve media bytes, implement a production upload pipeline, provide authenticated multi-user hosting, enforce private publication policy, or implement live streaming. These are explicit next capabilities, not hidden guarantees.
+The loopback-only Creator Node now includes an initial local media asset upload/download prototype, documented in [Local Media Assets](MEDIA_ASSETS.md). It streams recorded bytes, computes SHA-256, checks optional declared length/digest, rejects duplicate asset IDs, and supports range-enabled reads. This is source implementation—not yet a verified end-to-end creator publishing workflow. The Node still has no authentication or production privacy enforcement, and it does not provide independent-client publication, cross-host export/import, capture tooling, or live streaming.
 
 The measure of success is creator choice: content can be created with one tool, published through one host, discovered by another service, consumed in another client, and moved to another provider without surrendering portable identity or publication history.
 
