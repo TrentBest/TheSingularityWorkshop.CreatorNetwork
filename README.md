@@ -9,7 +9,7 @@
 
 CreatorNetwork is the foundation for a creator-owned internet: not another destination that asks everyone to move into one platform, but interoperable contracts and reference implementations that let independent creators publish once and reach many clients without surrendering the relationship to a single platform.
 
-The repository now contains the first provider-neutral contract library, validation tests, a loopback-only file-backed Creator Node prototype, and named performance benchmarks. Independent publisher/consumer programs and the complete export/import path remain in progress; we distinguish working code from planned capabilities.
+The repository contains the first provider-neutral contract library, validation tests, a loopback-only file-backed Creator Node prototype, named performance benchmarks, and a source-integrated Profiles identity projection adapter with focused tests. The adapter still requires trusted host-side publisher/persona resolution, and its tests have not yet been run. Independent publisher/consumer programs and the complete export/import path remain in progress; we distinguish working code from planned capabilities.
 
 **[Start with the concept](docs/THEORY.md) · [Understand the architecture](docs/ARCHITECTURE.md) · [First vertical slice](docs/GETTING_STARTED.md) · [Profiles integration](docs/PROFILES_INTEGRATION.md) · [Documentation index](DOCUMENTATION_INDEX.md)**
 
@@ -60,7 +60,7 @@ The first proof is intentionally smaller than a social network:
 5. Export the publication and move it to another host without changing creator identity.
 6. Consume the same publication from a separate Experience without hardcoding its content.
 
-The contract models, validator, and local Creator Node prototype are implemented. Independent publisher/consumer programs and export/import are still to come; the six-step workflow is an acceptance target, not a claim that it already runs.
+The contract models, validator, and local Creator Node prototype are implemented. The Profiles projection adapter is implemented but not yet verified by a test run, and it does not provide trusted publisher resolution. Independent publisher/consumer programs and export/import are still to come; the six-step workflow is an acceptance target, not a claim that it already runs.
 
 ## 🟪 05 — Build the open network
 
