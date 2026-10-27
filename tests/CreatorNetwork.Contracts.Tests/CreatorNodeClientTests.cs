@@ -57,7 +57,7 @@ public sealed class CreatorNodeClientTests
                 Content = new ByteArrayContent(bytes)
             };
             response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("audio/webm");
-            response.Headers.ETag = new System.Net.Http.Headers.EntityTagHeaderValue("\\"sha256-" + digest + "\\"");
+            response.Headers.ETag = new System.Net.Http.Headers.EntityTagHeaderValue("\"sha256-" + digest + "\"");
             return Task.FromResult(response);
         });
         using var http = new HttpClient(handler);
