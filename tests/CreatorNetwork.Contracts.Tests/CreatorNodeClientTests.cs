@@ -165,6 +165,64 @@ public sealed class CreatorNodeClientTests
     }
 
     [Fact]
+    public async Task IndependentConsumer_RetrievesManifestThenDownloadsAndVerifiesReferencedBytes()
+    {
+        byte[] bytes = Encoding.UTF8.GetBytes("consumer proof media");
+        string digest = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+        var publication = new ChannelPublication(
+            ChannelPublication.CurrentSchema,
+            "consumer-channel",
+            new CreatorIdentity("creator-001"),
+            "Consumer proof",
+            null,
+            "unlisted",
+            1,
+            DateTimeOffset.UtcNow,
+            new[]
+            {
+                new ContentReference(
+                    "consumer-asset", "audio/webm", bytes.Length, digest,
+                    "https://untrusted.example/must-not-be-requested")
+            });
+        var handler = new RecordingHandler((request, _) =>
+        {
+            if (request.RequestUri!.AbsolutePath.EndsWith("/v1/channels/consumer-channel", StringComparison.Ordinal))
+            {
+                Assert.Equal(HttpMethod.Get, request.Method);
+                return Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = JsonContent.Create(publication)
+                });
+            }
+
+            if (request.RequestUri.AbsolutePath.EndsWith("/v1/assets/consumer-asset", StringComparison.Ordinal))
+            {
+                Assert.Equal(HttpMethod.Get, request.Method);
+                var response = new HttpResponseMessage(HttpStatusCode.OK)
+                {
+                    Content = new ByteArrayContent(bytes)
+                };
+                response.Content.Headers.ContentType =
+                    new System.Net.Http.Headers.MediaTypeHeaderValue("audio/webm");
+                response.Headers.ETag =
+                    new System.Net.Http.Headers.EntityTagHeaderValue("\\"sha256-" + digest + "\\"");
+                return Task.FromResult(response);
+            }
+
+            throw new Xunit.Sdk.XunitException("Consumer attempted an unexpected network request: " + request.RequestUri);
+        });
+        using var http = new HttpClient(handler);
+        var client = new CreatorNodeClient(http, new Uri("http://127.0.0.1:5080/"));
+        ChannelPublication retrieved = await client.GetPublicationAsync("consumer-channel");
+        await using var destination = new MemoryStream();
+
+        await client.DownloadVerifiedAsync(retrieved.Content[0], destination);
+
+        Assert.Equal(bytes, destination.ToArray());
+        Assert.Equal(2, handler.RequestCount);
+    }
+
+    [Fact]
     public async Task DownloadVerifiedAsync_RejectsDigestMismatch()
     {
         byte[] bytes = Encoding.UTF8.GetBytes("actual content");
