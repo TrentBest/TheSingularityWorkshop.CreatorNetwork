@@ -29,6 +29,10 @@ CreatorNetwork starts with contracts and a proving slice. Keep the portable cont
 
 The Node is a development prototype. It has no authentication or production privacy enforcement and must not be exposed to a network.
 
+## HTTP and REST ownership
+
+Read [HTTP and REST Ownership Map](HTTP_OWNERSHIP.md) before adding network code. FSM_REST is the shared owner for reusable REST capability/transport behavior where its verified contracts fit. CreatorNetwork retains publication and media domain semantics. In particular, JSON publication metadata is a REST integration candidate, while raw media upload/download must remain on streaming-capable paths rather than passing through text-body REST contracts.
+
 ## Build and test
 
 With the .NET 8 SDK, run the contract tests:
