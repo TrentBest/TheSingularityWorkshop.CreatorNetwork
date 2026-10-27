@@ -48,6 +48,38 @@ Get-FileHash .\clip.downloaded.mp4 -Algorithm SHA256
 
 Use the digest from the upload response to compare the downloaded bytes. For large files, the server streams through the response rather than loading the complete file into memory.
 
+## Host-neutral .NET authoring client
+
+The `CreatorNetwork.Authoring` project provides a small `.NET 8` client that can be reused by desktop/AnyApp hosts and server-side web hosts. It accepts an already-recorded stream, uploads it with bounded-memory streaming, returns the finalized descriptor, and can turn that descriptor into a portable `ContentReference`. Publication is a separate explicit call; uploading media does not silently publish it.
+
+A host should connect its capture adapter (for example, a UserIO-backed browser or desktop adapter) to this client:
+
+1. Request only the selected microphone/camera and handle permission denial in the host.
+2. Record and let the creator preview/discard the result.
+3. After explicit confirmation, call `CreatorNodeClient.UploadAsync` with the media stream, type, and known length/digest if available.
+4. Build a `ContentReference` from the returned finalized descriptor and include it in a new `ChannelPublication`.
+5. Only after a second explicit publish action, call `CreatorNodeClient.PublishAsync`.
+
+The client rejects non-loopback plain HTTP because the current Node has no authentication. HTTPS is required for remote origins, but HTTPS alone does not make the current Node production-ready. Browser capture permissions and device APIs remain host-specific and are intentionally not hidden behind a fake cross-platform permission abstraction.
+
+Example construction:
+
+```csharp
+using var http = new HttpClient();
+var creatorNode = new CreatorNetwork.Authoring.CreatorNodeClient(
+    http, new Uri("http://127.0.0.1:5080/"));
+
+// After capture, preview, and explicit creator confirmation:
+MediaAssetDescriptor asset = await creatorNode.UploadAsync(
+    assetId, mediaType, cancellationToken => ValueTask.FromResult<Stream>(openFile()),
+    lengthBytes, cancellationToken: cancellationToken);
+
+// A separate user action should construct the manifest and call PublishAsync.
+ContentReference content = creatorNode.CreateContentReference(asset);
+```
+
+This client is a host-neutral upload/publication transport layer, not the capture implementation itself. It does not request permissions, enumerate devices, encode media, or implement live sessions.
+
 ## Error behavior
 
 | Condition | Response |
