@@ -71,8 +71,11 @@ var creatorNode = new CreatorNetwork.Authoring.CreatorNodeClient(
 
 // After capture, preview, and explicit creator confirmation:
 MediaAssetDescriptor asset = await creatorNode.UploadAsync(
-    assetId, mediaType, cancellationToken => ValueTask.FromResult<Stream>(openFile()),
-    lengthBytes, cancellationToken: cancellationToken);
+    assetId,
+    mediaType,
+    _ => ValueTask.FromResult<Stream>(File.OpenRead(path)),
+    new FileInfo(path).Length,
+    cancellationToken: cancellationToken);
 
 // A separate user action should construct the manifest and call PublishAsync.
 ContentReference content = creatorNode.CreateContentReference(asset);
