@@ -58,6 +58,13 @@ public sealed class FileMediaStore
         {
             string contentPath = GetContentPath(assetId);
             string descriptorPath = GetDescriptorPath(assetId);
+
+            // Recover an interrupted two-file finalization before deciding whether the ID is taken.
+            if (File.Exists(contentPath) && !File.Exists(descriptorPath))
+                File.Delete(contentPath);
+            if (File.Exists(descriptorPath) && !File.Exists(contentPath))
+                File.Delete(descriptorPath);
+
             if (File.Exists(contentPath) || File.Exists(descriptorPath))
                 throw new MediaAssetAlreadyExistsException(assetId);
 
