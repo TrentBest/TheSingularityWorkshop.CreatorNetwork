@@ -20,9 +20,9 @@ CreatorNetwork starts with contracts and a proving slice. Keep the portable cont
 ## Current implementation
 
 - `src/CreatorNetwork.Contracts`: provider-neutral .NET Standard 2.0 models and validation.
-- `src/CreatorNetwork.Node`: .NET 8 loopback-only file-backed prototype with in-memory response caching and conditional ETags.
+- `src/CreatorNetwork.Node`: .NET 8 loopback-only prototype with file-backed publication metadata, bounded streaming media ingest, SHA-256 verification, descriptor persistence, and range-enabled asset delivery. It remains unauthenticated and development-only.
 - `src/CreatorNetwork.Profiles`: .NET 8 source-integrated publication adapter; requires a local Profiles development checkout. It checks the authenticated-principal flag, validates the audience ID, and delegates trusted persona resolution/disclosure to a host-owned resolver. It is not itself an authentication provider or authorization enforcement layer.
-- `tests/CreatorNetwork.Contracts.Tests`: contract validation and file-store persistence tests.
+- `tests/CreatorNetwork.Contracts.Tests`: contract validation, publication file-store persistence, and media asset ingest/integrity/storage tests. The new media tests have not yet been executed.
 - `tests/CreatorNetwork.Profiles.Tests`: focused projection and publication-boundary tests, pending execution against the dependency source checkout.
 - `benchmarks/CreatorNetwork.Benchmarks`: named BenchmarkDotNet validation workloads.
 
@@ -45,6 +45,8 @@ dotnet test .\tests\CreatorNetwork.Profiles.Tests\CreatorNetwork.Profiles.Tests.
 
 CI must record the exact dependency commit SHA alongside the test evidence. Source-integrated validation does not prove that a downstream package can restore published NuGet dependencies. CiAi orchestration is tracked in [CiAi issue #13](https://github.com/TrentBest/TheSingularityWorkshop.CiAi/issues/13); until the supported integration is in place, do not claim a green CiAi-driven run.
 
+To run the prototype and benchmarks, see [Local Media Assets](MEDIA_ASSETS.md) for upload/download examples. The media store is loopback-only and must not be exposed to a network.
+
 To run the prototype and benchmarks:
 
 ```powershell
@@ -57,7 +59,7 @@ Benchmark details and rules are in [Performance](PERFORMANCE.md). A numeric base
 ## Suggested implementation order
 
 1. Contract models and validation.
-2. A local/file-backed Creator Node.
+2. A local/file-backed Creator Node and bounded recorded-media asset store (implementation added; test execution still required).
 3. Profiles host adapter and concrete trusted publisher/persona resolver backed by the host's identity-link store.
 4. An independent publisher and consumer.
 5. Export/import with a media inventory.
