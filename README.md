@@ -11,7 +11,7 @@ CreatorNetwork is the foundation for a creator-owned internet: not another desti
 
 The repository contains the first provider-neutral contract library, validation tests, a loopback-only file-backed Creator Node prototype, named performance benchmarks, and a source-integrated Profiles publication adapter with focused tests. The adapter requires a trusted host resolver for publisher/persona selection and audience-specific disclosure; test execution remains pending. Independent publisher/consumer programs and the complete export/import path remain in progress; we distinguish working code from planned capabilities.
 
-**[Start with the concept](docs/THEORY.md) · [Understand the architecture](docs/ARCHITECTURE.md) · [First vertical slice](docs/GETTING_STARTED.md) · [Creator studio, capture, and streaming](docs/CREATOR_STUDIO_AND_STREAMING.md) · [Profiles integration](docs/PROFILES_INTEGRATION.md) · [Documentation index](DOCUMENTATION_INDEX.md)**
+**[Start with the concept](docs/THEORY.md) · [Understand the architecture](docs/ARCHITECTURE.md) · [First vertical slice](docs/GETTING_STARTED.md) · [Local media assets](docs/MEDIA_ASSETS.md) · [Creator studio, capture, and streaming](docs/CREATOR_STUDIO_AND_STREAMING.md) · [Profiles integration](docs/PROFILES_INTEGRATION.md) · [Documentation index](DOCUMENTATION_INDEX.md)**
 
 ## 🟣 01 — Why CreatorNetwork?
 
@@ -68,6 +68,7 @@ The contract models, validator, and local Creator Node prototype are implemented
 - **Understand ownership and boundaries:** [Architecture](docs/ARCHITECTURE.md).
 - **Follow the first proving path:** [Getting Started](docs/GETTING_STARTED.md).
 - **Integrate profile identity and disclosure safely:** [Profiles Integration](docs/PROFILES_INTEGRATION.md).
+- **Upload and retrieve a local recorded-media asset:** [Local Media Assets](docs/MEDIA_ASSETS.md). This prototype is loopback-only and not production-secure.
 - **Understand authoring, capture, recorded media, and live-stream boundaries:** [Creator Studio, Capture, and Streaming](docs/CREATOR_STUDIO_AND_STREAMING.md).
 - **Review protocol choices:** [Interoperability](docs/INTEROPERABILITY.md).
 - **Understand trust limits:** [Security and Trust](docs/SECURITY_AND_TRUST.md).
