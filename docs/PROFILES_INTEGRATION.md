@@ -35,11 +35,13 @@ For private or group-limited publications, the host must evaluate the actual obs
 
 ## Source-integrated adapter
 
-The adapter is implemented in `src/CreatorNetwork.Profiles`. It maps an already-approved `ProfileRepresentation` into `CreatorIdentity`, copying only the Profiles ID, disclosed display name, and an optional profile URI explicitly supplied by the host. It deliberately does not copy claims or avatar values because the current CreatorNetwork identity contract has no fields for them.
+The adapter lives in `src/CreatorNetwork.Profiles` and intentionally references a local Profiles source project instead of a NuGet package. That keeps development integration on the dependency repository's `development` source even before a package is published. The portable `CreatorNetwork.Contracts` project remains independent of Profiles.
 
-**The mapper is a projection, not a trust boundary.** It cannot prove that a representation belongs to the authenticated publisher or that the host selected the intended public persona. The host must establish those facts before calling it. Missing or ambiguous trusted mappings must fail closed before publication; do not infer trust from display names, URIs, or external account references.
+- `ProfilesCreatorIdentityMapper` projects an already-approved `ProfileRepresentation` into `CreatorIdentity`, copying only the Profiles ID, disclosed display name, and optional host-approved profile URI. Claims and avatar are not copied because the current wire identity contract has no fields for them.
+- `ITrustedProfilesPublisherResolver` is the explicit host-owned boundary for mapping an authenticated publisher to the intended persona and applying audience-specific disclosure. Implementations must return `null` when a mapping is missing, ambiguous, or untrusted.
+- `ProfilesCreatorIdentityPublicationAdapter` rejects an unauthenticated principal and uninitialized audience before invoking the resolver, fails closed when the resolver returns no approved representation, and then uses the narrow mapper.
 
-The adapter deliberately uses a project reference to a local Profiles source checkout rather than a NuGet package. That makes development integration use the dependency repository's `development` source even before a package is published. It does not make the project independently buildable without that checkout.
+**This adapter cannot authenticate the caller or make an arbitrary resolver trustworthy.** The host must establish authentication, and the resolver implementation must be backed by trusted identity-link data and enforce unambiguous persona selection plus audience-specific disclosure. External identity bindings, names, and URIs are not authentication proof. The optional URI must be approved separately by host policy.
 
 From a workspace with both repositories checked out side-by-side, run PowerShell:
 
@@ -48,7 +50,7 @@ $profilesProject = (Resolve-Path ..\TheSingularityWorkshop.Profiles\TheSingulari
 dotnet test .\TheSingularityWorkshop.CreatorNetwork\tests\CreatorNetwork.Profiles.Tests\CreatorNetwork.Profiles.Tests.csproj -c Release -p:ProfilesProjectPath="$profilesProject"
 ```
 
-The property must resolve to the actual Profiles project in the `development` checkout. CI should check out both repositories, record the exact Profiles commit SHA, and pass the resolved project path. A successful source-integrated test is distinct from validation that a downstream package can restore its published NuGet dependencies. Automated CI orchestration remains tracked in [CiAi issue #13](https://github.com/TrentBest/TheSingularityWorkshop.CiAi/issues/13); no successful run is claimed here.
+Run this from the parent directory containing both repository folders. The property must resolve to the actual Profiles project in the `development` checkout. CI should check out both repositories, record the exact Profiles commit SHA, and pass the resolved project path. Source-integrated tests are distinct from validation that a downstream package can restore published NuGet dependencies. CiAi orchestration remains tracked in [CiAi issue #13](https://github.com/TrentBest/TheSingularityWorkshop.CiAi/issues/13); no successful run is claimed here.
 
 ## Identity links and external accounts
 
@@ -75,10 +77,13 @@ This is interoperability, not duplication: Profiles remains authoritative for pr
 ## Acceptance checks
 
 - [ ] A trusted host resolves the authenticated publisher to one intended persona and fails closed on missing or ambiguous mappings.
-- [ ] Only an observer-appropriate, approved representation is passed to the mapper.
-- [x] The adapter copies only the Profiles ID and approved display name, plus an optional host-approved profile URI.
-- [x] The adapter rejects an uninitialized Profiles ID and does not copy claims or avatar data.
-- [ ] Integration tests prove a linked canonical identity and private claims cannot leak through the full host-to-publication flow.
+- [ ] Resolver implementation is backed by trusted identity-link data and applies disclosure for the requested audience.
+- [x] Adapter rejects unauthenticated principals and uninitialized audience IDs before resolving.
+- [x] Adapter fails closed when no approved representation is available.
+- [x] Mapper copies only the Profiles ID and approved display name, plus an optional host-approved profile URI.
+- [x] Mapper rejects an uninitialized Profiles ID and does not copy claims or avatar data.
+- [x] Focused tests cover authentication gating, audience validation, resolver failure, and serialized identity-field boundaries (test execution still pending).
+- [ ] Integration tests prove a linked canonical identity cannot leak through the real host-to-publication flow.
 - [ ] A host cannot treat CreatorIdentity.DisplayName or ProfileUri as authentication proof.
 - [ ] Public manifest reads do not return raw Profile objects, private claims, or access records.
 - [ ] Export/import preserves stable identity references without treating old host URLs as identity.
