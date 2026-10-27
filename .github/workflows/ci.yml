@@ -37,7 +37,7 @@ jobs:
       - name: Restore and test Profiles integration
         run: dotnet test tests/CreatorNetwork.Profiles.Tests/CreatorNetwork.Profiles.Tests.csproj --configuration Release --logger "trx;LogFileName=profiles-tests.trx"
       - name: Build benchmarks
-        run: dotnet build benchmarks/CreatorNetwork.Benchmarks/CreatorNetwork.Benchmarks.csproj --configuration Release --no-restore
+        run: dotnet build benchmarks/CreatorNetwork.Benchmarks/CreatorNetwork.Benchmarks.csproj --configuration Release
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
