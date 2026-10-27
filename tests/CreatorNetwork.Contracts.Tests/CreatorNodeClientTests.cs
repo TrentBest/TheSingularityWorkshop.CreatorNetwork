@@ -1,6 +1,7 @@
 using System.Net;
 using System.Net.Http.Json;
 using System.Text;
+using System.Security.Cryptography;
 using CreatorNetwork.Authoring;
 using CreatorNetwork.Contracts;
 using Xunit;
@@ -39,6 +40,69 @@ public sealed class CreatorNodeClientTests
         ContentReference reference = client.CreateContentReference(result);
         Assert.Equal(result.Sha256, reference.Sha256);
         Assert.Equal(result.LengthBytes, reference.LengthBytes);
+    }
+
+    [Fact]
+    public async Task DownloadVerifiedAsync_StreamsBytesAndVerifiesDigestAndLength()
+    {
+        byte[] bytes = Encoding.UTF8.GetBytes("recorded media bytes");
+        string digest = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+        var expected = new MediaAssetDescriptor("asset-verified", "audio/webm", bytes.Length, digest);
+        var handler = new RecordingHandler((request, _) =>
+        {
+            Assert.Equal(HttpMethod.Get, request.Method);
+            Assert.EndsWith("/v1/assets/asset-verified", request.RequestUri!.AbsoluteUri);
+            var response = new HttpResponseMessage(HttpStatusCode.OK)
+            {
+                Content = new ByteArrayContent(bytes)
+            };
+            response.Content.Headers.ContentType = new System.Net.Http.Headers.MediaTypeHeaderValue("audio/webm");
+            response.Headers.ETag = new System.Net.Http.Headers.EntityTagHeaderValue("\\"sha256-" + digest + "\\"");
+            return Task.FromResult(response);
+        });
+        using var http = new HttpClient(handler);
+        var client = new CreatorNodeClient(http, new Uri("http://127.0.0.1:5080/"));
+        await using var destination = new MemoryStream();
+
+        await client.DownloadVerifiedAsync(expected, destination);
+
+        Assert.Equal(bytes, destination.ToArray());
+        Assert.Equal(1, handler.RequestCount);
+    }
+
+    [Fact]
+    public async Task DownloadVerifiedAsync_RejectsDigestMismatch()
+    {
+        byte[] bytes = Encoding.UTF8.GetBytes("actual content");
+        var expected = new MediaAssetDescriptor(
+            "asset-mismatch", "audio/webm", bytes.Length,
+            "0000000000000000000000000000000000000000000000000000000000000000");
+        var handler = new RecordingHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new ByteArrayContent(bytes)
+        }));
+        using var http = new HttpClient(handler);
+        var client = new CreatorNodeClient(http, new Uri("http://localhost:5080/"));
+
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            client.DownloadVerifiedAsync(expected, new MemoryStream()));
+    }
+
+    [Fact]
+    public async Task DownloadVerifiedAsync_RejectsLengthMismatch()
+    {
+        byte[] bytes = Encoding.UTF8.GetBytes("short");
+        string digest = Convert.ToHexString(SHA256.HashData(bytes)).ToLowerInvariant();
+        var expected = new MediaAssetDescriptor("asset-short", "audio/webm", bytes.Length + 1, digest);
+        var handler = new RecordingHandler((_, _) => Task.FromResult(new HttpResponseMessage(HttpStatusCode.OK)
+        {
+            Content = new ByteArrayContent(bytes)
+        }));
+        using var http = new HttpClient(handler);
+        var client = new CreatorNodeClient(http, new Uri("http://localhost:5080/"));
+
+        await Assert.ThrowsAsync<InvalidDataException>(() =>
+            client.DownloadVerifiedAsync(expected, new MemoryStream()));
     }
 
     [Fact]
