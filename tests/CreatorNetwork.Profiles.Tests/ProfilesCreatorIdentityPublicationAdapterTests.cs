@@ -1,4 +1,5 @@
 using System.Security.Claims;
+using System.Text.Json;
 using CreatorNetwork.Contracts;
 using CreatorNetwork.Profiles;
 using TheSingularityWorkshop.Profiles;
@@ -42,7 +43,7 @@ public sealed class ProfilesCreatorIdentityPublicationAdapterTests
     }
 
     [Fact]
-    public void DelegatesAudienceAndMapsOnlyApprovedRepresentation()
+    public void DelegatesAudienceAndSerializesOnlyApprovedIdentityFields()
     {
         var expectedAudience = ProfileId.New();
         var expectedRepresentation = new ProfileRepresentation(
@@ -62,7 +63,13 @@ public sealed class ProfilesCreatorIdentityPublicationAdapterTests
         Assert.Equal(expectedRepresentation.Id.ToString(), result.Id);
         Assert.Equal("Publisher persona", result.DisplayName);
         Assert.Equal("https://example.test/publisher", result.ProfileUri);
-        Assert.DoesNotContain("private-email", result.ToString(), StringComparison.OrdinalIgnoreCase);
+
+        var json = JsonSerializer.Serialize(result);
+        Assert.Contains(expectedRepresentation.Id.ToString(), json, StringComparison.Ordinal);
+        Assert.Contains("Publisher persona", json, StringComparison.Ordinal);
+        Assert.DoesNotContain("private-email", json, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("private@example.test", json, StringComparison.OrdinalIgnoreCase);
+        Assert.DoesNotContain("avatar-not-copied", json, StringComparison.OrdinalIgnoreCase);
     }
 
     private static ClaimsPrincipal AuthenticatedPublisher() =>
