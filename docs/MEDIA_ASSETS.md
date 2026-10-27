@@ -52,6 +52,8 @@ Use the digest from the upload response to compare the downloaded bytes. For lar
 
 The `CreatorNetwork.Authoring` project provides a small `.NET 8` client that can be reused by desktop/AnyApp hosts and server-side web hosts. It accepts an already-recorded stream, uploads it with bounded-memory streaming, returns the finalized descriptor, and can turn that descriptor into a portable `ContentReference`. Publication is a separate explicit call; uploading media does not silently publish it.
 
+`CreatorNodeClient.DownloadVerifiedAsync` provides the independent-consumer side of the loopback proof: supply the finalized descriptor and a writable destination stream, and it downloads from the configured Node while counting bytes and computing SHA-256. It rejects a media-type mismatch when the response supplies a type, checks a SHA-256 ETag when present, and rejects a final byte-length or digest mismatch. It streams with bounded memory; because verification completes after streaming, a failed download may have already written bytes to the destination, which must be discarded rather than treated as verified.
+
 A host should connect its capture adapter (for example, a UserIO-backed browser or desktop adapter) to this client:
 
 1. Request only the selected microphone/camera and handle permission denial in the host.
