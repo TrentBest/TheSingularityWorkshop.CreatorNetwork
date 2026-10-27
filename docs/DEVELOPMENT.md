@@ -21,34 +21,51 @@ CreatorNetwork starts with contracts and a proving slice. Keep the portable cont
 
 - `src/CreatorNetwork.Contracts`: provider-neutral .NET Standard 2.0 models and validation.
 - `src/CreatorNetwork.Node`: .NET 8 loopback-only file-backed prototype with in-memory response caching and conditional ETags.
+- `src/CreatorNetwork.Profiles`: .NET 8 source-integrated projection adapter; requires a local Profiles development checkout and does not perform authentication or authorization.
 - `tests/CreatorNetwork.Contracts.Tests`: contract validation and file-store persistence tests.
+- `tests/CreatorNetwork.Profiles.Tests`: focused adapter projection tests, pending execution against the dependency source checkout.
 - `benchmarks/CreatorNetwork.Benchmarks`: named BenchmarkDotNet validation workloads.
 
 The Node is a development prototype. It has no authentication or production privacy enforcement and must not be exposed to a network.
 
 ## Build and test
 
-With the .NET 8 SDK:
+With the .NET 8 SDK, run the contract tests:
 
-```bash
-dotnet test tests/CreatorNetwork.Contracts.Tests/CreatorNetwork.Contracts.Tests.csproj -c Release
+```powershell
+dotnet test .\tests\CreatorNetwork.Contracts.Tests\CreatorNetwork.Contracts.Tests.csproj -c Release
+```
+
+To test the Profiles adapter, check out `TheSingularityWorkshop.Profiles` on its `development` branch beside this repository and pass the absolute path to its project:
+
+```powershell
+$profilesProject = (Resolve-Path ..\TheSingularityWorkshop.Profiles\TheSingularityWorkshop.Profiles.csproj).Path
+dotnet test .\tests\CreatorNetwork.Profiles.Tests\CreatorNetwork.Profiles.Tests.csproj -c Release -p:ProfilesProjectPath="$profilesProject"
+```
+
+CI must record the exact dependency commit SHA alongside the test evidence. Source-integrated validation does not prove that a downstream package can restore published NuGet dependencies. CiAi orchestration is tracked in [CiAi issue #13](https://github.com/TrentBest/TheSingularityWorkshop.CiAi/issues/13); until the supported integration is in place, do not claim a green CiAi-driven run.
+
+To run the prototype and benchmarks:
+
+```powershell
 dotnet run -c Release --project src/CreatorNetwork.Node
 dotnet run -c Release --project benchmarks/CreatorNetwork.Benchmarks -- --filter '*'
 ```
 
-Benchmark details and rules are in [Performance](PERFORMANCE.md). The first benchmark run must be executed and preserved before a numeric baseline is claimed.
+Benchmark details and rules are in [Performance](PERFORMANCE.md). A numeric baseline must not be claimed until the first benchmark run is executed and preserved.
 
 ## Suggested implementation order
 
 1. Contract models and validation.
 2. A local/file-backed Creator Node.
-3. An independent publisher and consumer.
-4. Export/import with a media inventory.
-5. Cross-origin integration tests.
-6. Protocol interoperability proof.
-7. Security and operational hardening.
+3. Profiles host adapter and trusted publisher mapping.
+4. An independent publisher and consumer.
+5. Export/import with a media inventory.
+6. Cross-origin integration tests.
+7. Protocol interoperability proof.
+8. Security and operational hardening.
 
-The first two items have prototypes; the remaining items are the next proving work. This sequence does not require a separate package or service for each concern.
+The contract models, local Node prototype, and a narrow identity projection adapter exist. The adapter does not yet implement trusted publisher resolution or prove the full host-to-publication privacy boundary. Independent publisher/consumer programs and export/import remain future proving work.
 
 ## Branch and release discipline
 
