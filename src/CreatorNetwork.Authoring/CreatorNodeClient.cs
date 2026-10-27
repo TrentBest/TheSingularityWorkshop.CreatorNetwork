@@ -72,6 +72,60 @@ public sealed class CreatorNodeClient
     }
 
     /// <summary>
+    /// Retrieves and validates a publication manifest from this Node. The manifest is untrusted input:
+    /// its route identity and complete contract are checked before it is returned to the caller.
+    /// </summary>
+    public async Task<ChannelPublication> GetPublicationAsync(
+        string publicationId,
+        CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(publicationId) || publicationId.Length > 200 ||
+            publicationId.Any(char.IsControl) || publicationId is "." or "..")
+            throw new ArgumentException("Publication ID must be a non-empty opaque identifier of at most 200 characters.", nameof(publicationId));
+
+        using var request = new HttpRequestMessage(
+            HttpMethod.Get,
+            new Uri(_baseUri, $"v1/channels/{Uri.EscapeDataString(publicationId)}"));
+        using HttpResponseMessage response = await _httpClient.SendAsync(
+            request, HttpCompletionOption.ResponseHeadersRead, cancellationToken).ConfigureAwait(false);
+        response.EnsureSuccessStatusCode();
+
+        ChannelPublication? publication = await response.Content.ReadFromJsonAsync<ChannelPublication>(
+            JsonOptions, cancellationToken).ConfigureAwait(false);
+        if (publication is null ||
+            !string.Equals(publication.PublicationId, publicationId, StringComparison.Ordinal))
+            throw new InvalidDataException("The Node returned a publication manifest whose identifier does not match the requested publication.");
+
+        IReadOnlyList<PublicationValidationError> errors = PublicationValidator.Validate(publication);
+        if (errors.Count != 0)
+            throw new InvalidDataException("The Node returned an invalid publication manifest: " +
+                string.Join("; ", errors.Select(error => error.Message)));
+
+        return publication;
+    }
+
+    /// <summary>
+    /// Downloads content described by a publication reference. The reference must include
+    /// finalized length and SHA-256 metadata; SourceUri is deliberately ignored because it
+    /// is a delivery hint, not a trusted origin or content identity.
+    /// </summary>
+    public Task DownloadVerifiedAsync(
+        ContentReference expected,
+        Stream destination,
+        CancellationToken cancellationToken = default)
+    {
+        ArgumentNullException.ThrowIfNull(expected);
+        if (!expected.LengthBytes.HasValue || string.IsNullOrWhiteSpace(expected.Sha256))
+            throw new ArgumentException(
+                "The content reference must include finalized byte length and SHA-256 metadata.",
+                nameof(expected));
+
+        var descriptor = new MediaAssetDescriptor(
+            expected.Id, expected.MediaType, expected.LengthBytes.Value, expected.Sha256);
+        return DownloadVerifiedAsync(descriptor, destination, cancellationToken);
+    }
+
+    /// <summary>
     /// Downloads an asset from this Node and verifies the received byte count and SHA-256
     /// against a previously trusted finalized descriptor. Bytes are streamed; the whole
     /// asset is never buffered in memory. If verification fails, the destination may already
