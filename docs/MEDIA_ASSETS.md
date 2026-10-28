@@ -106,7 +106,7 @@ A disconnected or cancelled upload should leave no finalized descriptor. Tempora
 - The store is append-only by asset ID in this prototype; replacing content requires a new asset ID.
 - Media bytes are not automatically linked into a channel manifest. A publisher must deliberately create a `ContentReference` using the returned descriptor and then publish the manifest.
 - The service does not capture media, transcode it, create thumbnails, implement resumable uploads, or provide live streaming.
-- The current tests are source-level additions and must be executed with the documented .NET test command before this capability is considered verified.
+- The contract, authoring, and Node test suite passed in [CI run #5](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/40636160069). This is local prototype verification only; it does not establish authentication, authorization, public-network safety, revocation, or cross-host migration.
 
 ## Test
 
