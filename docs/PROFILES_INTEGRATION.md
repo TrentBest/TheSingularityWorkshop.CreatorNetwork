@@ -50,7 +50,7 @@ $profilesProject = (Resolve-Path ..\TheSingularityWorkshop.Profiles\TheSingulari
 dotnet test .\TheSingularityWorkshop.CreatorNetwork\tests\CreatorNetwork.Profiles.Tests\CreatorNetwork.Profiles.Tests.csproj -c Release -p:ProfilesProjectPath="$profilesProject"
 ```
 
-Run this from the parent directory containing both repository folders. The property must resolve to the actual Profiles project in the `development` checkout. CI should check out both repositories, record the exact Profiles commit SHA, and pass the resolved project path. Source-integrated tests are distinct from validation that a downstream package can restore published NuGet dependencies. CiAi orchestration remains tracked in [CiAi issue #13](https://github.com/TrentBest/TheSingularityWorkshop.CiAi/issues/13); no successful run is claimed here.
+Run this from the parent directory containing both repository folders. The property must resolve to the actual Profiles project in the `development` checkout. CI should check out both repositories, record the exact Profiles commit SHA, and pass the resolved project path. Source-integrated tests are distinct from validation that a downstream package can restore published NuGet dependencies. The source-integrated Profiles test suite passed in [CreatorNetwork CI run #5](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/40636160069). This confirms the checked-in test suite against the Profiles source checkout used by CI; it does not prove a production host integration or downstream NuGet restore. CiAi orchestration remains tracked in [CiAi issue #13](https://github.com/TrentBest/TheSingularityWorkshop.CiAi/issues/13).
 
 ## Identity links and external accounts
 
@@ -82,12 +82,12 @@ This is interoperability, not duplication: Profiles remains authoritative for pr
 - [x] Adapter fails closed when no approved representation is available.
 - [x] Mapper copies only the Profiles ID and approved display name, plus an optional host-approved profile URI.
 - [x] Mapper rejects an uninitialized Profiles ID and does not copy claims or avatar data.
-- [x] Focused tests cover authentication gating, audience validation, resolver failure, and serialized identity-field boundaries (test execution still pending).
+- [x] Focused tests cover authentication gating, audience validation, resolver failure, and serialized identity-field boundaries; the suite passed in [CI run #5](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/40636160069).
 - [ ] Integration tests prove a linked canonical identity cannot leak through the real host-to-publication flow.
 - [ ] A host cannot treat CreatorIdentity.DisplayName or ProfileUri as authentication proof.
 - [ ] Public manifest reads do not return raw Profile objects, private claims, or access records.
 - [ ] Export/import preserves stable identity references without treating old host URLs as identity.
-- [ ] Run and record source-integrated restore/build/tests against the Profiles development checkout before claiming CI verification.
+- [x] CI restore/build/tests passed against the Profiles development checkout in [run #5](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/40636160069); downstream package restore and real host-to-publication integration remain unverified.
 
 ---
 
