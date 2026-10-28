@@ -60,7 +60,7 @@ The first proof is intentionally smaller than a social network:
 5. Export the publication and move it to another host without changing creator identity.
 6. Consume the same publication from a separate Experience without hardcoding its content.
 
-The contract models, validator, and local Creator Node prototype are implemented. The Profiles publication adapter now gates on an authenticated principal, validates the audience identity, delegates trusted persona resolution to a host-provided resolver, and fails closed when no approved representation is returned. Its tests have not yet been executed. Independent publisher/consumer programs and export/import are still to come; the six-step workflow is an acceptance target, not a claim that it already runs.
+The contract models, validator, and local Creator Node prototype are implemented. The Profiles publication adapter gates on an authenticated principal, validates the audience identity, delegates trusted persona resolution to a host-provided resolver, and fails closed when no approved representation is returned. Its source-integrated tests passed in [CI run #5](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/40636160069); this verifies the current adapter test suite, not a production host's authentication or authorization. Independent publisher/consumer programs and export/import are still to come; the six-step workflow is an acceptance target, not a claim that it already runs.
 
 ## 🟪 05 — Build the open network
 
