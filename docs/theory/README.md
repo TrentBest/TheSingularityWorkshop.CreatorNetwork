@@ -10,6 +10,7 @@ This path explains CreatorNetwork's domain alongside the [operational guide](../
 2. [Publication contracts and references](02-publication-contracts.md) — what the current contract represents and what it does not.
 3. [Trust, identity, and rights](03-trust-and-rights.md) — separate claims that are often incorrectly collapsed.
 4. [A vertical slice and its evidence](04-workflow-and-evidence.md) — reason from code/tests to honest capability claims.
+5. [Creator workflow and portability layers](05-creator-workflow-and-portability.md) — follow the intended creator journey and distinguish metadata, media bytes, identity, and serving policy.
 
 ## Current implementation boundary
 
