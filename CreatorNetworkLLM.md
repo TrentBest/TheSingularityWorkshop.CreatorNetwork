@@ -16,11 +16,11 @@ This document is the coordination contract for AI-assisted work in CreatorNetwor
 
 Before feature expansion, review [Issue #7](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/issues/7) and [the domain review](docs/DOMAIN_REVIEW.md). Keep the review evidence-based; inspect actual source contracts and development branches before introducing dependencies or assuming capabilities.
 
-The missing domain is the Experiences-owned authored-to-finalized runtime-composition workflow: validate editability with available platform tooling or a supplied editor/super-Experience, reject unsupported content, deterministically capture/version the runtime composition, and exclude development-only editor tooling. Do not confuse this authoring domain with CreatorNetwork publication contracts or FSM_COS runtime manifests.
+The missing upstream domain is the Experiences-owned authored-to-finalized runtime-composition workflow: validate editability with available platform tooling or a supplied editor/super-Experience, reject unsupported content, deterministically capture/version the runtime composition, and exclude development-only editor tooling. CreatorNetwork's intended product boundary is broader than recorded media: it is the portable distribution/publication/trust plane for authored MicroBundles, Experiences, and typed resources. The current channel/media API is only a proving slice, not the canonical general artifact model. Do not confuse authoring with CreatorNetwork publication contracts or FSM_COS runtime manifests.
 
 ## Ownership boundaries
 
-- **CreatorNetwork:** provider-neutral publication/channel contracts, revisions, approved identity references, attribution/rights declarations, and portable content references.
+- **CreatorNetwork:** portable distribution/publication and trust contracts for creator-authored MicroBundles, Experiences, and typed resources: stable references, version/revision semantics, provenance/rights declarations, integrity references, discovery-facing metadata, and provider portability. Current channel/media DTOs are provisional, not proof that this general contract is complete.
 - **Profiles:** identity semantics, persona relationships, and observer-specific disclosure. A trusted host must enforce authentication and authorization; a profile projection is not an authorization grant.
 - **Experiences:** authoring, editability validation, finalization, and runtime-composition packaging.
 - **FSM_API:** state-machine and lifecycle primitives. Do not put CreatorNetwork policy or host-specific dependencies into FSM_API.
@@ -29,7 +29,8 @@ The missing domain is the Experiences-owned authored-to-finalized runtime-compos
 - **UserIO:** source selection, capture, and permission lifecycle. Consume finalized capture output rather than rebuilding device capture in CreatorNetwork.
 - **Foundry:** general Hub workflow sequencing, cancellation, status, and structured outcomes. CreatorNetwork provides narrow domain operations and remains usable headlessly.
 - **GUI:** optional host-selected presentation; not the authoritative workflow or run state.
-- **Media providers:** streaming ingest/delivery, byte integrity, replication, and storage. Hashes prove byte equality, not identity or rights.
+- **Artifact/resource providers and repositories:** byte storage/delivery, integrity verification, and cache/replication mechanics behind provider-neutral contracts. MicroBundle artifacts, Experience artifacts, and non-executable resources remain distinct kinds with different lifecycle and trust semantics. Hashes prove byte equality, not identity or rights.
+- **FSM_COS + host:** FSM_COS composes verified MicroBundle capabilities; the host owns artifact resolution integration, execution authorization, runtime lifecycle, and presentation. A valid digest is not permission to execute.
 - **Clients / Experiences:** consume and present publications; they are not canonical publication owners.
 
 ## Security and trust rules
