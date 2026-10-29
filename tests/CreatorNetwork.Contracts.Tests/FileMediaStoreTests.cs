@@ -1,5 +1,6 @@
 using System;
 using System.IO;
+using System.Linq;
 using System.Security.Cryptography;
 using System.Text;
 using System.Threading;
@@ -61,6 +62,7 @@ public sealed class FileMediaStoreTests
 
             Assert.Null(await store.GetDescriptorAsync("asset:bad-digest", CancellationToken.None));
             Assert.Null(store.OpenRead("asset:bad-digest"));
+            AssertNoTemporaryFiles(directory);
         }
         finally
         {
@@ -109,6 +111,7 @@ public sealed class FileMediaStoreTests
                 expectedLength: null, expectedSha256: null, CancellationToken.None));
 
             Assert.Null(await store.GetDescriptorAsync("asset:large", CancellationToken.None));
+            AssertNoTemporaryFiles(directory);
         }
         finally
         {
@@ -130,6 +133,7 @@ public sealed class FileMediaStoreTests
                 bytes.Length + 1, null, CancellationToken.None));
 
             Assert.Null(await store.GetDescriptorAsync("asset:wrong-length", CancellationToken.None));
+            AssertNoTemporaryFiles(directory);
         }
         finally
         {
@@ -193,6 +197,15 @@ public sealed class FileMediaStoreTests
         {
             Directory.Delete(directory, recursive: true);
         }
+    }
+
+    private static void AssertNoTemporaryFiles(string directory)
+    {
+        string[] temporaryFiles = Directory.GetFiles(directory)
+            .Where(path => path.EndsWith(".upload", StringComparison.Ordinal) ||
+                           path.EndsWith(".tmp", StringComparison.Ordinal))
+            .ToArray();
+        Assert.Empty(temporaryFiles);
     }
 
     private static string NewDirectory()
