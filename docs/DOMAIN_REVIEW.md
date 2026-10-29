@@ -212,3 +212,42 @@ This assessment is preliminary. It does not constitute a full interoperability r
 
 <!-- THE SINGULARITY WORKSHOP FOOTER -->
 <p align="center"><img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/Avatar.jpg" alt="The Singularity Workshop avatar" width="180" /></p>
+
+## 11. Source-level implementation audit (2026-10-29; prototype boundaries confirmed)
+
+This audit records behavior visible in the current `development` source. It is not a penetration test or a production security certification.
+
+### Confirmed strengths worth retaining
+
+- `FileMediaStore` streams upload bodies through a fixed 64 KiB buffer, enforces a configurable maximum (512 MiB by default), calculates SHA-256 while writing, and checks declared length and an optional expected digest before finalizing.
+- Asset and publication file names are derived from SHA-256 of their logical identifiers, rather than concatenating untrusted identifiers into filesystem paths.
+- Managed upload failures clean up the temporary upload/descriptor files. If a process interruption leaves only one member of the asset/descriptor pair, a later upload attempt for that same asset ID removes the incomplete member before retrying.
+- `FilePublicationStore` writes a temporary manifest and replaces the destination file, and the current tests exercise the intended local persistence contract.
+- These are useful local-provider techniques, not proof of cross-process transactions, durable crash recovery, or production authorization.
+
+### Blocking gaps observed directly in source
+
+1. **Visibility is declarative, not enforced.** `ChannelPublication.Visibility` is validated as `public`, `unlisted`, or `private`, but the current node's publication GET and asset GET handlers have no authentication/authorization check. The asset handler does not consult publication visibility at all. Because the service is bound to loopback, this is a local prototype limitation; do not expose it to a network or describe private assets as protected.
+2. **No publisher authority or revision concurrency control.** `PUT /v1/channels/{publicationId}` validates shape and route/body ID equality, then overwrites the current document. The handler does not authenticate the publisher, authorize an update, compare a prior revision/ETag, or require monotonically increasing revisions. The DTO's positive revision number is creator-assigned metadata, not an enforced history.
+3. **Crash residue is only partly handled.** A retry for the same asset ID repairs an orphaned content/descriptor pair, but random `.upload` / `.tmp` files left by abrupt termination are not scavenged by startup recovery. The two-file asset finalization is not one filesystem transaction; reads may see an incomplete pair during a crash window, and recovery is opportunistic on a later PUT for that ID. Existing tests cover managed failures, not process termination or power-loss durability.
+4. **Concurrency guarantees are process-local.** Per-ID `SemaphoreSlim` gates serialize operations within one instance/process, not multiple node processes sharing the same directory. The code does not claim a multi-process coordination contract.
+5. **Cached reads assume one writer.** Publication and descriptor caches can retain values after files are changed or repaired externally. There is no cross-process invalidation or reconciliation protocol; do not treat the current caches as a shared-storage coherence mechanism.
+6. **Resource and abuse controls are incomplete.** The store has a per-asset byte ceiling, but the current node has no principal-scoped quota, rate limit, authentication, moderation gate, or production abuse controls. A byte limit alone does not bound request count, metadata growth, storage consumption across many IDs, or total concurrent work.
+7. **Integrity is not continuous verification.** SHA-256 is calculated at ingest and exposed in metadata/ETag, but ordinary reads do not re-hash the stored content. This is acceptable as a prototype storage assumption, not evidence that bytes cannot be altered after ingest.
+
+### Disposition update
+
+- **Keep as prototype techniques:** streamed bounded ingest, ingest-time digest validation, identifier hashing for filenames, manifest temp-file replacement, and focused managed-failure cleanup tests.
+- **Keep prominently marked provisional:** channel publication DTOs, file-backed local node, descriptor/manifest caches, and two-file media finalization.
+- **Do not reuse as production trust controls:** visibility labels, creator ID fields, revision numbers, hashes/ETags, or loopback-only assumptions without an explicit authenticated host/provider authorization boundary and tests.
+- **Required before any network exposure:** authenticated publisher identity, per-operation authorization (including reads), visibility/audience enforcement at serving boundaries, revision conflict policy, quotas/rate limits, startup recovery/temporary-file scavenging, multi-process/storage ownership decision, and failure tests for interrupted finalization.
+- **Still outside this code audit:** whether a publisher has legal rights to distribute content, whether an origin permits migration, whether a takedown is legally required, and whether remote copies can be recalled. These require separate policy, provider process, and qualified legal review.
+
+### Next acceptance tests suggested by this audit
+
+- A `private` publication cannot be read by an unauthorized principal, and an asset linked only from that publication cannot be fetched without an authorized decision.
+- Two updates based on the same prior revision cannot silently overwrite one another; stale writes receive a stable conflict outcome.
+- Startup/reopen after simulated interruption identifies and safely handles incomplete asset pairs and orphan temp files without deleting a completed asset.
+- A second store instance/process cannot violate asset uniqueness or return a stale cache entry when sharing a directory is supported; otherwise, the provider explicitly rejects/document this deployment mode.
+- Post-ingest byte mutation is detected according to a documented integrity-on-read or trusted-storage policy.
+
