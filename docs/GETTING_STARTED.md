@@ -2,7 +2,7 @@
 
 # Getting Started: the first vertical slice
 
-The first milestone proves creator portability end to end. It should not attempt to ship a complete social network, video editor, streaming platform, or recommendation engine.
+The first milestone is intended to prove creator portability end to end. The current runnable slice below demonstrates local contract validation, metadata storage, and reads; it does not yet prove complete portability. It should not attempt to ship a complete social network, video editor, streaming platform, or recommendation engine.
 
 > **Current status:** portable contracts, validation tests, and a loopback-only file-backed Creator Node prototype exist. Independent publisher/consumer applications and export/import are still in progress. The Node is for local development only, not a production multi-user host.
 
