@@ -10,7 +10,7 @@ Use this index to find the right level of explanation. The README introduces the
 
 | If you want to… | Read |
 |---|---|
-| Understand the problem CreatorNetwork solves | [Theory](docs/THEORY.md) |
+| Understand the problem CreatorNetwork solves | [Theory learning path](docs/theory/README.md) · [Theory overview](docs/THEORY.md) |
 | See who owns each responsibility | [Architecture](docs/ARCHITECTURE.md) |
 | Integrate profile identity and disclosure safely | [Profiles Integration](docs/PROFILES_INTEGRATION.md) |
 | Upload and retrieve a local recorded-media asset | [Local Media Assets](docs/MEDIA_ASSETS.md) |
