@@ -6,6 +6,8 @@ Use this index to find the right level of explanation. The README introduces the
 
 ## Start here
 
+| Repository guidance | [CreatorNetwork LLM contract](CreatorNetworkLLM.md) · [Domain and trust review](docs/DOMAIN_REVIEW.md) |
+
 | If you want to… | Read |
 |---|---|
 | Understand the problem CreatorNetwork solves | [Theory](docs/THEORY.md) |
