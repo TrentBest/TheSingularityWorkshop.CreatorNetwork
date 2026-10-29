@@ -4,6 +4,8 @@
 
 This is an implementation-grounded review checkpoint for [Issue #7](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/issues/7). It is a working domain decision record, not a claim that CreatorNetwork is production-ready or that unresolved legal and trust questions have been solved.
 
+**Scope correction:** CreatorNetwork is not a video/audio service. Its intended domain is the portable distribution, publication, discovery/addressing, integrity, provenance, rights-policy, and trust plane connecting creator-authored MicroBundles, Experiences, and typed resources to replaceable repositories/providers and independent hosts. Media is one resource family, not the root abstraction. The existing channel/media endpoints are a local proving slice; they do not yet prove the broader artifact-and-Experience lifecycle. Integrity verification also does not make executable content safe to load or execute.
+
 ## 1. Domain glossary
 
 | Term | Meaning and authority |
@@ -13,7 +15,7 @@ This is an implementation-grounded review checkpoint for [Issue #7](https://gith
 | **Experience** | An authored, versioned composition of reusable capabilities and content that a host can validate and present or execute. The Experiences domain owns the authoring-to-runtime-composition workflow. |
 | **MicroBundle** | A reusable unit defined by [MicroBundleDomain](https://github.com/TrentBest/TheSingularityWorkshop.MicroBundleDomain). Reference reusable meaning by stable identity/version; do not copy it into every Experience without reason. |
 | **Runtime manifest** | A request for capabilities and versions to compose. [FSM_COS](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS) consumes it to resolve and assemble runtime capabilities; it is not an editor project or publication manifest. |
-| **Publication / channel** | CreatorNetwork's versioned, portable statement of what a creator makes available, including approved metadata and content references. |
+| **Publication** | CreatorNetwork's versioned, portable declaration of an authored artifact, Experience, or resource made available under a stated policy, with stable references and revision semantics. The current channel DTO is a provisional implementation, not yet a complete general artifact publication contract. |
 | **Media asset** | Durable or finalized bytes with content type, length when known, integrity evidence, and provider delivery references. |
 | **Live session** | A time-bound session with its own authorization, endpoint, reconnect, and termination lifecycle. It is not interchangeable with a durable asset or publication revision. |
 | **Source URI** | An untrusted location hint. It is not an identity, integrity proof, authorization grant, or guarantee that fetching is safe. |
@@ -85,20 +87,23 @@ Revocation / takedown / dispute
 
 ## 4. Ecosystem ownership and reuse decisions
 
-| System | Decision | Evidence / boundary to verify before integration |
+| System | Decision | Evidence / boundary |
 |---|---|---|
-| Profiles | **Reuse through adapter** | Current `src/CreatorNetwork.Profiles` is source-integrated and delegates persona resolution/disclosure to a trusted host resolver. Do not serialize full Profiles state into public publication DTOs. |
-| UserIO | **Reuse for capture** | Capture belongs to selected-source adapters with permission lifecycle. CreatorNetwork should accept finalized output, not reimplement device capture. Verify actual interfaces before adding a dependency. |
-| SingularityWarehouse | **Investigate before reuse** | Inspect its actual disk/cache, identity, authorization, and lifecycle contracts. Persistent caching should avoid repeat MicroBundle downloads where identity/version/integrity match; do not assume media assets share executable-artifact semantics. |
-| MicroBundleDomain / MicroBundleRepository | **Reuse compatible references; keep storage semantics distinct** | MicroBundleDomain owns bundle meaning; Repository owns retrieval/location concerns. Inspect current contracts and integrity patterns before adopting them for media. |
-| FSM_API | **Reuse as lifecycle primitive** | State-machine/context mechanics only; no CreatorNetwork domain policy belongs in FSM_API. Follow [FSM_API LLM guidance](https://github.com/TrentBest/FSM_API/blob/master/FSM_APILLM.md). |
-| FSM_COS | **Use for runtime composition when needed** | It resolves/assembles capabilities. Do not add editor metadata to `RuntimeManifest` or turn COS into an authoring, media, or application scheduler. |
-| Experiences | **Own authored-to-finalized composition** | The missing domain is a workflow that checks editability with platform tooling or a supplied super/editor Experience, rejects unsupported content, deterministically captures and versions the runtime composition, and excludes development-only editors. This is a domain target, not yet a verified implementation claim. |
-| Foundry | **Reuse for general workflow orchestration** | If Hub-managed, Foundry owns sequencing, cancellation, run status, and structured outcomes. CreatorNetwork exposes narrow domain operations; do not duplicate a general workflow engine. |
-| GUI | **Optional presentation** | Host-selected UI only; keep headless authoring/validation possible. |
-| FSM_REST | **Evaluate for transport integration** | Verify actual request/response contracts and call sites before introducing a dependency. Media bytes need streaming-capable paths. |
+| Profiles | **Reuse through a narrow adapter** | Profiles owns identity/profile semantics, relationships, claims, and observer-specific disclosure. The host/provider still owns authentication and authorization enforcement. Publish only an approved projection, not a full profile. |
+| UserIO | **Do not duplicate capture** | Inspected `SemanticIntent` is an application-owned intent boundary, not a universal camera/microphone/device-capture implementation. Consume finalized output from a verified host-owned adapter. |
+| SingularityWarehouse | **Investigate a narrow reusable storage/cache contract; no direct coupling yet** | `LocalCacheService` persists data under LocalApplicationData and exposes blob operations, but writes are byte-array based. Caller-provided path components need confinement review; identity fallback and concurrency semantics are not a CreatorNetwork trust boundary. It does not currently establish streaming media, content-addressed immutable artifacts, retention, migration, or publication revocation. MicroBundle cache reuse should avoid repeat downloads when identity/version/digest match, without conflating executable artifacts with mutable media/resources. |
+| MicroBundleDomain | **Reuse its canonical meaning** | Defines MicroBundle capability identity, version, dependencies/providers/configuration, loading, and arbitration. Keep the What boundary separate from publication/distribution and from FSM_COS composition. |
+| MicroBundleRepository | **Reuse delivery/integrity patterns, not its domain as CreatorNetwork** | Provider-neutral artifact repository, explicit version + SHA-256 identity, and replaceable local/remote providers are useful patterns. Existing filesystem implementation materializes byte arrays and needs immutability/root-confinement review before any claim of direct reuse. A MicroBundle artifact is not a generic media/resource object. |
+| FSM_API | **Reuse as a lifecycle primitive** | State-machine/context mechanics only; no CreatorNetwork policy belongs in FSM_API. Follow [FSM_API LLM guidance](https://github.com/TrentBest/FSM_API/blob/master/FSM_APILLM.md). |
+| FSM_COS | **Use for runtime composition** | Resolves, validates, loads, and arbitrates MicroBundle compositions into a RuntimeAssembly. It does not download artifacts, verify repository hashes, edit content, schedule the application, or render an Experience. Never add editor metadata to `RuntimeManifest`. |
+| Experiences | **Own Experience authoring and build/finalization** | Catalogs/manifests and packaging tools exist, but the inspected generic packer does not prove host editability, editor-capability validation, or exclusion of development-only editor roots. The missing authoring-to-finalized-runtime-composition seam belongs here; it is not a CreatorNetwork media feature or an FSM_COS responsibility. |
+| StoryBuilder | **Reuse only where its actual domain fits** | The existing workspace/package compiler is not a generic substitute for Experiences' authoring/build contract. Do not repurpose a book-specific compiler to solve arbitrary Experience validation. |
+| Foundry | **Reuse for general workflow orchestration** | If Hub-managed, Foundry owns sequencing, cancellation, run status, and structured outcomes. CreatorNetwork should expose narrow domain operations and remain usable headlessly. |
+| GUI / The / Architect / AnyApp / WebApp | **Hosts and optional manifestations** | Presentation, interaction, host policy, and runtime lifecycle stay replaceable. A host must declare supported editors/handlers/capabilities; portability does not imply universal compatibility. |
+| FSM_REST | **Evaluate only against a concrete transport need** | Inspect request/response and streaming contracts before introducing dependencies. |
 | CiAi | **Use as CI authority when integrated** | Do not bypass required CI orchestration or infer domain correctness from a green build. |
-| The / Architect / AnyApp / WebApp | **Potential hosts and consumers** | Same finalized publication/composition workflow should be invocable by a host without CreatorNetwork owning the UI. Confirm concrete contracts before implementing adapters. |
+
+The evidence above is source inspection recorded in [Issue #7](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/issues/7); it is not a production-readiness endorsement. Reuse architectural patterns only after the target contract, lifecycle, threat model, and tests are explicit.
 
 ## 5. Risk register
 
@@ -121,51 +126,54 @@ Revocation / takedown / dispute
 
 | Existing area | Disposition | Reason / constraint |
 |---|---|---|
-| Provider-neutral contract library and validation | **Keep, review** | Useful portable center. Verify each field is publication semantics, not host/UI/provider policy. |
-| Loopback file-backed Creator Node | **Keep as development prototype** | Useful persistence/HTTP proving surface; unauthenticated and not production-secure. |
-| Streaming media ingest, SHA-256, finalized descriptor, range delivery | **Keep provisionally; test adversarially** | Useful media-plane primitives; integrity does not establish rights. Confirm cancellation, bounded memory, atomic finalization, access checks, and hostile-input behavior. |
-| Host-neutral authoring client | **Keep provisionally** | Should consume already-finalized media and require a separate explicit publish call; must not imply it captures or grants permissions. |
-| Profiles publication adapter | **Keep provisionally** | Host-owned resolver and fail-closed disclosure are the right boundary; test execution and real host authorization remain separate evidence. |
-| Current README and theory/architecture docs | **Keep and reconcile** | Problem-first structure and ownership boundaries are useful. Claims and runnable instructions must match current code and tests. |
-| Existing benchmark scaffolding | **Defer expansion** | First select a real, domain-approved end-to-end workload; then measure stable latency, throughput, and allocations. |
-| New endpoints, custom federation/identity/rights protocols, monetization | **Defer** | Require standards/fit review and explicit domain decisions before implementation. |
+| `CreatorNetwork.Contracts` publication/content-reference DTOs and validator | **Keep provisionally; revise against the broader domain** | Useful provider-neutral wire types, but current channel/media fields and validation do not yet define a general Experience/artifact publication lifecycle, finalized-reference linkage, monotonic revision policy, rights decision, or host authorization. |
+| Loopback file-backed Creator Node | **Keep as a local development prototype** | Useful HTTP/persistence proving surface. It is unauthenticated and not a production network or private-audience boundary. Keep loopback-only. |
+| Streaming media ingest, SHA-256, finalized descriptor, range delivery | **Keep as one resource-provider fixture** | Useful bounded streaming and integrity primitives, but they do not define CreatorNetwork's root domain. Source review found normal exception cleanup in code, while tests do not assert all temporary-file cleanup paths; crash orphan sweeping is not established. |
+| Publication-to-resource linkage and revisions | **Revise after policy decisions** | Source trace confirmed publication writes do not resolve references against finalized asset descriptors, enforce monotonic revisions, or retain prior revisions. These are contract gaps, not merely documentation gaps. |
+| Profiles adapter | **Keep provisionally** | The adapter is a narrow integration experiment; identity projection/disclosure does not itself authenticate the caller or authorize publication. Require CI and fail-closed projection tests. |
+| Experience authoring/build workflow | **Missing domain seam; upstream in Experiences** | Current packaging does not establish editability support, unsupported-content rejection, deterministic finalization, or editor-only root exclusion. Do not try to fix this by adding editor fields to FSM_COS RuntimeManifest. |
+| Current README and theory/architecture docs | **Keep and reconcile** | The docs name the ecosystem boundaries, but the implementation and current runnable slice remain channel/media-centered. End-user claims must match code and tested behavior. |
+| Benchmark scaffolding | **Defer expansion** | Select a domain-approved Experience distribution/composition workload first. Then measure end-to-end resolution, integrity, caching, allocations, and latency. |
+| New endpoints, federation, custom identity/rights protocols, monetization | **Defer** | Require a concrete behavior, fit analysis, domain decision, and interoperability tests before implementation. |
 | Full creator studio inside CreatorNetwork contracts | **Do not implement** | UI/editor belongs in a host or Experience; capture and media tooling remain replaceable capabilities. |
 | Editor fields in FSM_COS.RuntimeManifest | **Do not implement** | Runtime composition manifest and authoring project are distinct domain objects. |
 
 ## 7. Proposed minimum vertical slice
 
-Build one independently testable path before broadening features:
+The first proof should exercise the intended general distribution/composition domain. Keep it local and deliberately small:
 
-1. A host selects or imports one source and records permission/source failures explicitly.
-2. An Experience authoring workflow validates that the project is editable by the available platform tooling or supplied editor Experience.
-3. Unsupported content is rejected with actionable diagnostics; development-only editors/tooling are excluded from the finalized runtime composition.
-4. Finalization deterministically records the composition identity, version, and referenced MicroBundle versions/content digests.
-5. A trusted host authenticates the publisher, authorizes the intended publication/audience, resolves the approved Profiles projection, and records the rights/provenance assertions and unresolved status honestly.
-6. CreatorNetwork publishes a versioned manifest referencing finalized assets; it does not embed large media bytes or transient credentials.
-7. An independent consumer resolves the publication and fetches authorized media through a provider, using bounded streaming and integrity verification.
-8. An export/import path moves metadata and a media inventory to a second local provider while preserving publication identity and verifying every available byte.
-9. Revoke/takedown prevents future authorized reads at controlled serving boundaries and records which replicas/providers were notified; it does not claim to erase uncontrolled copies.
+1. Publish one versioned **Experience artifact** that references a small runtime composition: at least two MicroBundle capabilities with one declared dependency, plus one non-executable typed resource (for example an image or mesh fixture).
+2. Keep the Experience artifact, MicroBundle artifacts, and typed resource distinct; do not assume an Experience is itself a MicroBundle or that every resource is executable.
+3. Resolve artifacts through a provider-neutral repository/catalog boundary. Verify stable identity, explicit version, and SHA-256 before content is accepted; persistent caching may reuse a verified artifact only when its identity/version/digest match.
+4. Use FSM_COS to compose the requested MicroBundle capabilities after retrieval/integrity verification. Demonstrate a minimal independent host manifestation, but do not execute arbitrary third-party code solely because its hash matches.
+5. Validate the Experience's authoring/build path in Experiences: reject unsupported content with actionable diagnostics, deterministically finalize/version the runtime composition, and exclude editor-only/development tooling unless independently required at runtime.
+6. Apply a test host's explicit authorization seam to publication and artifact fetch. Keep creator identity projection, rights/provenance claims, and authorization as distinct concepts.
+7. Demonstrate a recorded-media asset as an optional resource fixture if useful; it must not define the root abstraction.
+8. Export/import the Experience plus its artifact/resource inventory to a second local provider, preserve portable identity/version information, report missing references, and verify all transferred digests.
+9. Demonstrate fail-closed behavior for missing dependencies, digest mismatch, unauthorized fetch, and unsupported authoring input. Record revocation/takedown limitations for provider-controlled origins/caches separately; do not promise recall of independent copies.
 
 ## 8. Acceptance tests (initial ten)
 
-1. **Unsupported authoring input:** invalid or uneditable content is rejected with a stable diagnostic and cannot be finalized.
-2. **Runtime/editor separation:** editor-only/development-only MicroBundles do not appear in the finalized runtime composition; required runtime dependencies do.
-3. **Deterministic finalization:** the same declared inputs and pinned dependency versions produce the same canonical composition identity/digest, or explicitly document any nondeterministic field.
-4. **Explicit publication authority:** unauthenticated and unauthorized principals cannot create/update a publication; an approved host resolver is required for persona projection.
-5. **Fail-closed disclosure:** absent, invalid, or audience-incompatible identity projection publishes no private/canonical identity fields.
-6. **Interrupted media ingest:** cancellation, truncation, digest mismatch, duplicate ID, or failed finalization never creates a readable finalized asset.
-7. **Bounded safe media handling:** large asset ingest/read uses bounded memory; path traversal, hostile metadata, unsafe redirects, and prohibited source targets are rejected.
-8. **Independent consumption:** a separate client reads a publication without hard-coded creator/channel identity and verifies the referenced bytes.
-9. **Cross-provider migration:** export/import preserves publication identity/revision, reports missing assets, checks import authorization, and verifies byte digests.
-10. **Revocation/takedown accounting:** future authorized reads are denied at controlled serving boundaries; known replica/cache notifications and unresolved copies are reported without claiming universal erasure.
+These are proposed observable gates, not claims that the current implementation passes them.
+
+1. **Artifact identity and integrity:** a versioned artifact with a mismatched digest is rejected before it enters a trusted cache or composition catalog.
+2. **Dependency resolution:** a valid Experience resolves all declared MicroBundle dependencies; a missing or incompatible dependency produces a stable diagnostic and no partial accepted composition.
+3. **Typed resource distinction:** a non-executable resource can be referenced and integrity-checked without being misclassified as a MicroBundle or executed as code.
+4. **Authoring editability:** unsupported or uneditable Experience content is rejected with an actionable diagnostic; no invalid finalized artifact is emitted.
+5. **Editor/runtime separation:** editor-only/development-only MicroBundles are absent from the finalized runtime composition unless explicitly and independently declared as runtime-required.
+6. **Deterministic finalization:** identical canonical inputs and pinned dependency versions yield the same composition identity/digest, or nondeterministic fields are explicitly excluded/versioned.
+7. **Authorization and disclosure:** unauthorized publication/fetch is denied by the host/provider seam; absent or audience-incompatible Profiles projections fail closed without leaking private identity fields.
+8. **Independent consumer/host:** a separate client resolves the published Experience, verifies referenced artifacts/resources, composes via FSM_COS, and produces a minimal manifestation without private CreatorNetwork implementation knowledge.
+9. **Cache and migration correctness:** cache hits require matching stable identity/version/digest; export/import preserves publication identity, reports missing artifacts, verifies bytes, and rejects unauthorized imports.
+10. **Revocation and unsafe inputs:** provider-controlled reads stop when access is revoked; hostile identifiers/path traversal and unapproved remote fetch targets fail closed; known cache/replica limitations are reported honestly.
 
 ## 9. Open decisions before production
 
 - Which existing identity/authentication, authorization, federation, object-storage, attribution/rights, media-delivery, and takedown standards fit the requirements?
 - What minimum provenance/license fields are required for publication versus copying/migration, and which claims require evidence or human review?
 - What are the host's source-fetch rules and origin trust model for import?
-- Which SingularityWarehouse cache/storage contracts can be reused safely for MicroBundles, and which media-specific semantics require a separate adapter?
-- What does a finalized Experience manifest contain, and which current Experiences contracts already express editability, deterministic finalization, and editor exclusion?
+- What narrow provider-neutral cache/storage contract is needed to reuse verified MicroBundle artifacts without directly coupling CreatorNetwork to SingularityWarehouse internals? Which mutability, streaming, authorization, retention, and revocation rules differ for media/resources?
+- What precise finalized Experience artifact/manifest contract should Experiences own, and what is the smallest missing seam for editability validation, deterministic finalization, and editor exclusion?
 - What provider-specific rules govern moderation, appeals, replica notification, and retention?
 - Which questions require qualified legal review? Metadata must not be presented as a universal legal-compliance solution.
 
