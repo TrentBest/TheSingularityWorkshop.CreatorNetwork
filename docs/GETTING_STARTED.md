@@ -83,7 +83,7 @@ The response includes an ETag. Send it back with `If-None-Match` to test conditi
 
 - It validates schema, identity references, revision, visibility declaration, timestamp, and content metadata.
 - It stores metadata locally and atomically replaces a manifest file.
-- It does **not** serve media bytes, enforce private/unlisted authorization, prove creator ownership, sign manifests, or provide a production authentication boundary.
+- It serves media bytes only for assets explicitly uploaded to the local `/v1/assets/{assetId}` endpoint; it does not automatically fetch `ContentReference.SourceUri` locations or prove cross-provider media migration. It does **not** enforce private/unlisted authorization, prove creator ownership, sign manifests, or provide a production authentication boundary.
 - It is bound to loopback and has no authentication. **Do not expose it to a network or use it for real private content.**
 - Metadata portability is not media-byte portability. Export/import and independent-client acceptance tests remain required.
 
