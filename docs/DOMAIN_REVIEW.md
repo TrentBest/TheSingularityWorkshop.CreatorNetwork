@@ -177,6 +177,28 @@ These are proposed observable gates, not claims that the current implementation 
 - What provider-specific rules govern moderation, appeals, replica notification, and retention?
 - Which questions require qualified legal review? Metadata must not be presented as a universal legal-compliance solution.
 
+
+## 10. Standards fit assessment (initial; no protocol adopted)
+
+This is a scope-fit assessment of existing standards, not a declaration that CreatorNetwork implements them. The goal is to reuse mature protocols where their domain matches and avoid treating any single standard as a complete identity, rights, storage, and federation solution.
+
+| Concern | Candidate / source | Fit | Boundary / decision |
+|---|---|---|---|
+| Host authentication and delegated authorization | [OAuth 2.0 Security Best Current Practice, RFC 9700](https://www.rfc-editor.org/rfc/rfc9700.html); OpenID Connect should be evaluated for authentication claims if a host needs it | **Strong candidate at the host boundary** | OAuth is an authorization framework, not proof of copyright or ownership. Choose flows and token validation based on the actual host/client deployment; apply current BCP. Do not embed an identity provider or custom login protocol in the portable publication DTO. |
+| Rights and usage-policy expression | [W3C ODRL Information Model 2.2](https://www.w3.org/TR/odrl-model/) | **Candidate for interoperable declarations** | ODRL can express permissions, prohibitions, duties, and constraints. A policy document is still an expression of policy, not evidence that the assigner owns rights, that the policy is legally valid, or that a provider enforces it. Define a minimal profile only after the publication/copying use cases and legal review are clear. |
+| Media provenance and tamper-evident history | [C2PA Content Credentials specification](https://spec.c2pa.org/specifications/2.5/specs/C2PA_Specification.html) | **Optional media-specific integration** | C2PA can bind signed provenance assertions to media and expose signer-based trust signals. It is opt-in and media-oriented; its own scope does not judge whether assertions are good/true or establish legal redistribution rights. Preserve/validate credentials when present; do not require C2PA for every MicroBundle, Experience, or generic resource. |
+| Social/federated publication and activity delivery | [W3C ActivityPub](https://www.w3.org/TR/activitypub/) | **Possible future adapter, not the core artifact contract** | ActivityPub defines client/server and server/server social activity protocols. It may suit announcements, actor-facing activities, or federation adapters, but does not replace versioned artifact identity, repository integrity, editor/runtime validation, resource transfer, or provider authorization. Federation and deletion behavior require an explicit threat/policy model. |
+| Media transfer, partial reads, caching validators | [HTTP Semantics, RFC 9110](https://www.rfc-editor.org/rfc/rfc9110.html) | **Reuse standard HTTP behavior where useful** | Range requests, conditional requests, and representation semantics can support large media and resumable reads. HTTP does not define CreatorNetwork's identity, rights, authorization, cache trust, or publication revision semantics; enforce policy before serving each request. |
+| Immutable executable-artifact identity and delivery | Existing [MicroBundleRepository contract](https://github.com/TrentBest/TheSingularityWorkshop.MicroBundleRepository) | **Reuse the inspected Workshop pattern; no direct dependency decision yet** | Explicit version + digest and replaceable providers fit MicroBundle artifact retrieval. Keep artifact-domain identity separate from mutable media/resource lifecycles and review local adapter immutability/root confinement before reuse. |
+| Object storage, cache, and migration | Provider APIs and existing SingularityWarehouse cache | **Unselected** | No storage-provider API should become the portable domain contract by default. First define streaming, object identity, retention, authorization, integrity, eviction, replica notification, and export/import behavior; then compare concrete adapters. |
+| Rights enforcement, moderation, takedown and appeal | No single protocol selected | **Unresolved policy and governance** | Wire formats can carry claims and notices but cannot create universal legal authority or guarantee remote deletion. Define provider-scoped process, audit trail, response states, and legal-review questions before implementing automated enforcement. |
+
+### Interim standards conclusion
+
+Use existing standards at replaceable boundaries rather than inventing a universal CreatorNetwork protocol: OAuth/OIDC for host authentication/authorization integration where appropriate; HTTP semantics for transport; ODRL as a possible policy-expression format; C2PA as optional media provenance; ActivityPub only if a concrete social-federation use case is approved. None removes the need for provider-enforced authorization, rights/provenance distinction, stable artifact identities, hostile-input controls, or honest revocation limits.
+
+This assessment is preliminary. It does not constitute a full interoperability review, security audit, or legal opinion. Before selecting any standard, test it against the actual deployment actors and acceptance cases, including independent implementations and failure behavior.
+
 ---
 
 ## Resources & Support
