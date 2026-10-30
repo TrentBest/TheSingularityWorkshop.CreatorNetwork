@@ -246,6 +246,81 @@ This audit records behavior visible in the current `development` source. It is n
 - A second store instance/process cannot violate asset uniqueness or return a stale cache entry when sharing a directory is supported; otherwise, the provider explicitly rejects/document this deployment mode.
 - Post-ingest byte mutation is detected according to a documented integrity-on-read or trusted-storage policy.
 
+
+## 12. Profiles package integration contract
+
+[TheSingularityWorkshop.Profiles](https://github.com/TrentBest/TheSingularityWorkshop.Profiles) is the authoritative Workshop domain for creator/entity profiles, claims, relationships, personas, and observer-specific disclosure. CreatorNetwork must consume that package through a narrow adapter rather than define a competing creator-profile model.
+
+### Ownership and dependency direction
+
+- **Profiles owns:** Profile, ProfileId, claim definitions/values, disclosure rules, groups and relationships, ProfileIdentityLink / ProfileIdentityLinkStore, ProfileRepresentation, ProfilePublicDataReporter, and the provider-qualified ExternalIdentityReference / ProfileExternalIdentityBinding domain contracts.
+- **CreatorNetwork owns:** publication identity and revisions, content/resource references, publication audience intent, provenance/rights declarations, distribution/discovery contracts, and provider-facing publication operations.
+- **The trusted host/provider owns:** authentication, validation of external credentials, mapping lifecycle and storage, authorization, persistence of Profiles objects, trusted observer/group context, projection selection, audit recording, and enforcement at every metadata/byte serving boundary.
+- **No reverse dependency:** Profiles remains independently usable and must not depend on CreatorNetwork. CreatorNetwork may reference the Profiles package through a small integration assembly or host adapter; the portable CreatorNetwork wire contracts must not require consumers to install Profiles merely to parse a publication.
+
+### Required creator publication flow
+
+~~~text
+Authentication provider
+   │ validates credential; produces authenticated principal
+   ▼
+Trusted host identity adapter
+   │ resolves provider-qualified issuer + subject
+   │ looks up ProfileExternalIdentityBinding
+   │ creates/updates mapping only under trusted policy
+   ▼
+Profiles
+   │ resolves the intended publisher/persona Profile
+   │ evaluates disclosure for the actual trusted observer
+   │ RepresentTo(observerId, trustedObserverGroups)
+   ▼
+CreatorNetwork projection adapter
+   │ allowlists publication-safe fields
+   │ keeps canonical/private links and raw Profile out
+   ▼
+CreatorNetwork publication
+   │ stores publisher reference + approved snapshot/reference
+   │ enforces publication and resource audience independently
+   ▼
+Consumer receives only the permitted creator projection
+~~~
+
+### Non-negotiable integration rules
+
+1. **Never equate profile identity with authentication.** ProfileId, ExternalIdentityReference, and ProfileExternalIdentityBinding are domain references. The host must validate the external credential and establish the principal before resolving a binding. A binding does not prove current ownership, authenticate a request, or authorize publication.
+2. **Publish a persona, not the canonical identity by accident.** Resolve the creator-selected publisher/persona Profile. Private ProfileIdentityLink relationships must remain inside trusted identity infrastructure and must never be serialized into CreatorNetwork publications, discovery results, exports, or consumer-facing errors.
+3. **Project for the real observer.** Use Profile.RepresentTo with an observer ID and group memberships supplied by trusted host state—not caller-provided group IDs. A public feed may use an explicitly defined public observer/projection policy; a private share must be projected for its authenticated recipient or audience. Do not use a synthetic observer as a shortcut that bypasses policy.
+4. **Treat projection as data minimization, not endpoint authorization.** Every publication, discovery, metadata, asset, range, conditional, cache, and export operation still requires host/provider authorization. DisclosureScope does not authorize an operation or grant a right to download the underlying content.
+5. **Allowlist publication fields.** Convert ProfileRepresentation into a versioned CreatorNetwork-owned publisher projection containing only fields intentionally supported by the publication contract. Never serialize a complete Profile, arbitrary raw claim values, private links, external identity bindings, access records, or licensing internals. Avoid arbitrary object serialization; define accepted claim keys/types and size limits.
+6. **Respect implementation limits.** Profiles documents that claim values are not deep-cloned and that the default assumption resolver receives the original Profile. Do not pass mutable or untrusted claim objects across trust boundaries. Do not treat Satisfied as independent verification unless a trusted verifier established it.
+7. **Keep disclosure, verification, rights, and authorization separate.** A public display name is not proof of legal creator ownership. A verified claim is not permission to redistribute content. A data-license allow-list is not an asset license or a publication authorization.
+8. **Audit deliberately.** The host should record relevant identity resolution, disclosure/projection, publication authorization, and access events through its own protected audit implementation. Profiles defines IProfileAccessRecorder but does not automatically persist access events; do not claim audit coverage unless the host invokes and tests it.
+
+### Integration shape and package policy
+
+- Prefer a small CreatorNetwork.Profiles adapter (or a host-owned adapter if that keeps CreatorNetwork's dependency graph cleaner) over adding Profiles types to the core portable DTOs.
+- Keep the core CreatorNetwork contracts provider-neutral and usable by a consumer that does not use Profiles. At the integration boundary, map Profiles identifiers and approved representations into CreatorNetwork-owned stable publisher-reference/projection types.
+- The adapter must target a framework compatible with the selected Profiles package and CreatorNetwork host. Profiles currently documents .NET 8 and source package version 0.1.0-alpha.1; verify the actual package feed/version before choosing a PackageReference. Do not publish or silently pin a prerelease based solely on README metadata.
+- Persistence of Profiles, external bindings, identity links, and access records belongs to the host/provider. Never store provider credentials or bearer tokens in a Profile claim or CreatorNetwork manifest.
+- Keep an explicit mapping between the authenticated principal, the selected publisher persona, and the CreatorNetwork publication owner. Do not assume one account maps to one persona or that one persona owns every publication.
+
+### Required adapter acceptance tests
+
+1. An unauthenticated request cannot resolve or create an external identity binding.
+2. A valid authenticated principal resolves only its authorized provider-qualified binding; issuer and subject are both matched exactly.
+3. An unbound, revoked, ambiguous, or unavailable mapping fails closed and cannot fall back to a caller-supplied ProfileId.
+4. A creator can publish through a selected publisher persona without exposing its private canonical identity link.
+5. A public observer receives only explicitly public claims; an excluded observer receives no display name or claims; private claims never enter publication metadata, discovery, exports, logs, or cache keys.
+6. Explicit and group disclosure uses host-supplied trusted observer/group context; caller-supplied group IDs cannot widen disclosure.
+7. Changing a Profile's public projection has a defined publication snapshot/update policy; historical publication revisions do not silently mutate because a live Profile changed.
+8. Mutable claim values are copied into validated immutable/serialized primitives before persistence or cross-process transfer.
+9. Disclosure success does not bypass independent authorization for publication writes, asset reads, range/conditional requests, exports, or cache hits.
+10. Identity-link, external-binding, and access-record data are absent from public wire contracts and consumer responses.
+11. Profile access events are recorded only at the intended host policy boundary, with retention and access controls tested; no claim is made that Profiles automatically audits reads.
+12. A consumer that does not reference Profiles can still parse and consume the portable CreatorNetwork publication contract.
+
+**Disposition:** Profiles is an approved domain reuse target, subject to the above adapter and enforcement tests. It is not the CreatorNetwork authentication provider, authorization engine, persistence layer, or security boundary. Do not add a second profile/persona model to CreatorNetwork, and do not make Profiles a mandatory dependency of every portable consumer.
+
 ---
 
 <!-- THE SINGULARITY WORKSHOP FOOTER -->
