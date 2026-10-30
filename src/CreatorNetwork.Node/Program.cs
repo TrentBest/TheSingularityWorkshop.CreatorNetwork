@@ -65,10 +65,32 @@ app.MapPut("/v1/channels/{publicationId}", async Task<IResult> (
     if (!await accessPolicy.CanWritePublicationAsync(context, publication, cancellationToken))
         return Results.StatusCode(StatusCodes.Status403Forbidden);
 
+    string? ifMatch = context.Request.Headers[HeaderNames.IfMatch].FirstOrDefault();
+    string? ifNoneMatch = context.Request.Headers[HeaderNames.IfNoneMatch].FirstOrDefault();
+    if (ifMatch is not null && ifNoneMatch is not null)
+        return Results.BadRequest(new { error = "publication.invalid_precondition", message = "Send either If-Match or If-None-Match, not both." });
+
+    bool createOnly = string.Equals(ifNoneMatch, "*", StringComparison.Ordinal);
+    if (ifNoneMatch is not null && !createOnly)
+        return Results.BadRequest(new { error = "publication.invalid_precondition", message = "If-None-Match must be '*'. " });
+
+    if (ifMatch is not null && (ifMatch.Contains(',') || ifMatch == "*" || ifMatch.StartsWith("W/", StringComparison.Ordinal)))
+        return Results.BadRequest(new { error = "publication.invalid_precondition", message = "If-Match must contain one strong ETag." });
+
+    if (ifMatch is null && !createOnly)
+        return Results.StatusCode(StatusCodes.Status428PreconditionRequired);
+
     try
     {
-        await store.PutAsync(publication, cancellationToken);
+        await store.PutAsync(publication, ifMatch, createOnly, cancellationToken);
+        StoredPublication? saved = await store.GetDocumentAsync(publicationId, cancellationToken);
+        if (saved is not null)
+            context.Response.Headers[HeaderNames.ETag] = saved.ETag;
         return Results.NoContent();
+    }
+    catch (PublicationPreconditionFailedException exception)
+    {
+        return Results.StatusCode(StatusCodes.Status412PreconditionFailed);
     }
     catch (PublicationRevisionConflictException exception)
     {
