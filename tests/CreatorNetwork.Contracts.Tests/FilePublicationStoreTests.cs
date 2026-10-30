@@ -47,4 +47,74 @@ public sealed class FilePublicationStoreTests
                 Directory.Delete(directory, recursive: true);
         }
     }
+    [Fact]
+    public async Task PublicationUpdates_RequireStrictlyIncreasingRevisions()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "creator-network-tests", Guid.NewGuid().ToString("N"));
+        var store = new FilePublicationStore(directory, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        try
+        {
+            await store.PutAsync(CreatePublication(4), CancellationToken.None);
+
+            var duplicate = await Assert.ThrowsAsync<PublicationRevisionConflictException>(() =>
+                store.PutAsync(CreatePublication(4), CancellationToken.None));
+            Assert.Equal(4, duplicate.CurrentRevision);
+            Assert.Equal(4, duplicate.AttemptedRevision);
+
+            var stale = await Assert.ThrowsAsync<PublicationRevisionConflictException>(() =>
+                store.PutAsync(CreatePublication(3), CancellationToken.None));
+            Assert.Equal(4, stale.CurrentRevision);
+            Assert.Equal(3, stale.AttemptedRevision);
+
+            await store.PutAsync(CreatePublication(5), CancellationToken.None);
+            ChannelPublication? current = await store.GetAsync("publication:revision", CancellationToken.None);
+            Assert.NotNull(current);
+            Assert.Equal(5, current!.Revision);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+                Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    [Fact]
+    public async Task PublicationUpdates_ConcurrentStaleWritersCannotReplaceNewerRevision()
+    {
+        string directory = Path.Combine(Path.GetTempPath(), "creator-network-tests", Guid.NewGuid().ToString("N"));
+        var store = new FilePublicationStore(directory, new JsonSerializerOptions(JsonSerializerDefaults.Web));
+        try
+        {
+            await store.PutAsync(CreatePublication(1), CancellationToken.None);
+
+            Task lower = store.PutAsync(CreatePublication(2), CancellationToken.None);
+            Task higher = store.PutAsync(CreatePublication(3), CancellationToken.None);
+            await Task.WhenAll(
+                lower.ContinueWith(task => task.IsFaulted && task.Exception!.GetBaseException() is PublicationRevisionConflictException,
+                    TaskScheduler.Default),
+                higher.ContinueWith(task => task.IsFaulted && task.Exception!.GetBaseException() is PublicationRevisionConflictException,
+                    TaskScheduler.Default));
+
+            ChannelPublication? current = await store.GetAsync("publication:revision", CancellationToken.None);
+            Assert.NotNull(current);
+            Assert.Equal(3, current!.Revision);
+        }
+        finally
+        {
+            if (Directory.Exists(directory))
+                Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    private static ChannelPublication CreatePublication(long revision) =>
+        new(
+            ChannelPublication.CurrentSchema,
+            "publication:revision",
+            new CreatorIdentity("creator:revision"),
+            "Revision test",
+            null,
+            "private",
+            revision,
+            DateTimeOffset.UtcNow);
+
 }
