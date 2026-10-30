@@ -88,7 +88,7 @@ app.MapPut("/v1/channels/{publicationId}", async Task<IResult> (
             context.Response.Headers[HeaderNames.ETag] = saved.ETag;
         return Results.NoContent();
     }
-    catch (PublicationPreconditionFailedException exception)
+    catch (PublicationPreconditionFailedException)
     {
         return Results.StatusCode(StatusCodes.Status412PreconditionFailed);
     }
