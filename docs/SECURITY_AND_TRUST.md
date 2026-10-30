@@ -24,6 +24,14 @@ Independent providers may set different policies, but interoperability still nee
 
 Creators need to understand the difference between a reference and an available asset. Production deployments need backups, recovery, TLS, access control, monitoring, and a plan for compromised credentials or signing keys. Replication improves availability only when replicas are maintained and permitted to hold the content.
 
+## Enforced host authorization seam
+
+The local Node routes delegate every publication read/write and asset-byte read/write to the host-provided `ICreatorNetworkAccessPolicy`. The policy receives the current `HttpContext` and the requested publication or asset identity, allowing a trusted host to evaluate its authenticated principal, audience, ownership mapping, and provider policy at the serving boundary.
+
+The built-in `LoopbackDevelopmentAccessPolicy` is deliberately limited to loopback connections. It is a local-development convenience, not identity-based authentication, not a private-publication guarantee, and not suitable for network exposure or real private data. A production host must replace it with an implementation that authenticates and authorizes each operation. Unauthorized writes return 403; unauthorized reads return 404 to avoid disclosing whether the requested publication or asset exists.
+
+The authorization policy is invoked before publication or asset reads reach the stores and before upload bodies are ingested. Range and conditional asset reads pass through the same asset-read decision before any descriptor, ETag, or bytes are returned. A host must not treat Profiles disclosure, a creator ID, or the publication's visibility string as a substitute for this decision.
+
 ## Security review before production
 
 Review identity proof and recovery; authorization of publication updates; access control at private origins; secret storage and key rotation; untrusted media and metadata parsing; denial-of-service risks; rights and takedown handling; privacy of subscription and analytics data; export/import validation; and dependency/build supply-chain controls.

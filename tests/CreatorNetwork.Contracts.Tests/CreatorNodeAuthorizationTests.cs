@@ -2,6 +2,7 @@ using System.Net;
 using System.Net.Http.Json;
 using CreatorNetwork.Contracts;
 using CreatorNetwork.Node;
+using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.AspNetCore.TestHost;
 using Microsoft.Extensions.DependencyInjection;
