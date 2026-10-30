@@ -208,11 +208,6 @@ This assessment is preliminary. It does not constitute a full interoperability r
 - [FSM_COS documentation](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS)
 - [FSM_API LLM coordination contract](https://github.com/TrentBest/FSM_API/blob/master/FSM_APILLM.md)
 
----
-
-<!-- THE SINGULARITY WORKSHOP FOOTER -->
-<p align="center"><img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/Avatar.jpg" alt="The Singularity Workshop avatar" width="180" /></p>
-
 ## 11. Source-level implementation audit (2026-10-29; prototype boundaries confirmed)
 
 This audit records behavior visible in the current `development` source. It is not a penetration test or a production security certification.
@@ -251,3 +246,7 @@ This audit records behavior visible in the current `development` source. It is n
 - A second store instance/process cannot violate asset uniqueness or return a stale cache entry when sharing a directory is supported; otherwise, the provider explicitly rejects/document this deployment mode.
 - Post-ingest byte mutation is detected according to a documented integrity-on-read or trusted-storage policy.
 
+---
+
+<!-- THE SINGULARITY WORKSHOP FOOTER -->
+<p align="center"><img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/Avatar.jpg" alt="The Singularity Workshop avatar" width="180" /></p>
