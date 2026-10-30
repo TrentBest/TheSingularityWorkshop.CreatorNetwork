@@ -16,7 +16,7 @@ This document records the current source-grounded transport boundary for Creator
 
 | Source path / operation | Current implementation | Classification | Required action |
 |---|---|---|---|
-| `src/CreatorNetwork.Node/Program.cs` — `GET/PUT /v1/channels/{publicationId}` | ASP.NET Core minimal API routes; JSON publication DTO; file-backed store | Host-owned REST endpoint and domain-specific publication API | Keep route, validation, ETag, persistence, and publication semantics here. The host owns incoming transport mechanics. |
+| `src/CreatorNetwork.Node/Program.cs` — `GET/PUT /v1/channels/{publicationId}` | ASP.NET Core minimal API routes; JSON publication DTO; file-backed store | Host-owned REST endpoint and domain-specific publication API | Keep route, validation, ETag, persistence, and publication semantics here. The provider rejects updates whose revision is not greater than the stored revision (HTTP 409, `publication.revision_conflict`). This is process-local prototype protection, not multi-process compare-and-swap. |
 | `src/CreatorNetwork.Node/Program.cs` — `PUT/GET /v1/assets/{assetId}` | ASP.NET Core request-body stream and `Results.Stream` with range processing | Binary/media transport | Keep streaming, cancellation, integrity, bounded size, and byte-range behavior on stream-capable APIs. Do not pass media through text-only REST bodies. |
 | `src/CreatorNetwork.Authoring/CreatorNodeClient.cs` — `UploadAsync` | `HttpRequestMessage`, `StreamContent`, `ResponseHeadersRead`; reads the small finalized JSON descriptor | Binary upload plus JSON control response | Retain streaming-capable transport. Tests must cover cancellation, non-success responses, and bounded-memory behavior. |
 | `src/CreatorNetwork.Authoring/CreatorNodeClient.cs` — `DownloadVerifiedAsync` | `HttpRequestMessage`, `ResponseHeadersRead`, stream copy with incremental SHA-256 and length checks | Binary/media delivery | Retain streaming-capable transport. Verify cancellation, HTTP errors, type/length/digest mismatches, and that failed output is not treated as verified. |
@@ -39,6 +39,12 @@ The FSM_REST development source currently exposes `TheSingularityWorkshop.FSM_RE
 3. Keep asset upload/download on streaming-capable APIs; do not add a new generic HTTP-wrapper package.
 4. Add deterministic tests for publication status/error propagation, cancellation, asset upload cancellation, download cancellation, byte-length and SHA-256 mismatches, and non-success responses. Use fake handlers/transports; no live service or credentials.
 5. Execute the test suite and record exact source/dependency SHAs before marking this boundary complete.
+
+## Publication revision behavior
+
+The local file provider now enforces strictly increasing revisions for an existing publication. A first stored revision must pass normal positive-revision validation; each subsequent update must have a revision greater than the currently stored revision. Equal or lower revisions are rejected with HTTP 409 and the stable error code `publication.revision_conflict`, including the current and attempted revision values. This prevents a stale writer from silently replacing a newer publication within the supported single-process node.
+
+This is not a complete history or distributed concurrency protocol: the provider still stores only the latest manifest, does not retain prior revisions, and does not support multiple node processes sharing one data directory. Authentication and publisher authorization are also still absent. A revision number is ordering metadata, not proof that the caller is entitled to publish.
 
 ## Security and deployment
 
