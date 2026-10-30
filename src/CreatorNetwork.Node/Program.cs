@@ -54,8 +54,21 @@ app.MapPut("/v1/channels/{publicationId}", async Task<IResult> (
     if (errors.Count != 0)
         return Results.BadRequest(new { error = "publication.invalid", details = errors });
 
-    await store.PutAsync(publication, cancellationToken);
-    return Results.NoContent();
+    try
+    {
+        await store.PutAsync(publication, cancellationToken);
+        return Results.NoContent();
+    }
+    catch (PublicationRevisionConflictException exception)
+    {
+        return Results.Conflict(new
+        {
+            error = "publication.revision_conflict",
+            publicationId = exception.PublicationId,
+            currentRevision = exception.CurrentRevision,
+            attemptedRevision = exception.AttemptedRevision
+        });
+    }
 });
 
 app.MapPut("/v1/assets/{assetId}", async Task<IResult> (
