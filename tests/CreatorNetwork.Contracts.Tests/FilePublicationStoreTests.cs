@@ -87,13 +87,12 @@ public sealed class FilePublicationStoreTests
         {
             await store.PutAsync(CreatePublication(1), CancellationToken.None);
 
-            Task lower = store.PutAsync(CreatePublication(2), CancellationToken.None);
-            Task higher = store.PutAsync(CreatePublication(3), CancellationToken.None);
-            await Task.WhenAll(
-                lower.ContinueWith(task => task.IsFaulted && task.Exception!.GetBaseException() is PublicationRevisionConflictException,
-                    TaskScheduler.Default),
-                higher.ContinueWith(task => task.IsFaulted && task.Exception!.GetBaseException() is PublicationRevisionConflictException,
-                    TaskScheduler.Default));
+            Task<bool> lower = TryPutAsync(store, CreatePublication(2));
+            Task<bool> higher = TryPutAsync(store, CreatePublication(3));
+            bool[] outcomes = await Task.WhenAll(lower, higher);
+
+            // Revision 3 must always win. Revision 2 may commit first or be rejected as stale.
+            Assert.True(outcomes[1]);
 
             ChannelPublication? current = await store.GetAsync("publication:revision", CancellationToken.None);
             Assert.NotNull(current);
@@ -103,6 +102,19 @@ public sealed class FilePublicationStoreTests
         {
             if (Directory.Exists(directory))
                 Directory.Delete(directory, recursive: true);
+        }
+    }
+
+    private static async Task<bool> TryPutAsync(FilePublicationStore store, ChannelPublication publication)
+    {
+        try
+        {
+            await store.PutAsync(publication, CancellationToken.None);
+            return true;
+        }
+        catch (PublicationRevisionConflictException)
+        {
+            return false;
         }
     }
 
