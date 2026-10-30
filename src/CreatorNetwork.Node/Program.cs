@@ -1,13 +1,14 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
 using Microsoft.Net.Http.Headers;
+using Microsoft.Extensions.DependencyInjection.Extensions;
 using CreatorNetwork.Contracts;
 using CreatorNetwork.Node;
 
 var builder = WebApplication.CreateBuilder(args);
 builder.WebHost.UseUrls("http://127.0.0.1:5080");
 
-var dataDirectory = Environment.GetEnvironmentVariable("CREATORNETWORK_DATA");
+var dataDirectory = builder.Configuration["CREATORNETWORK_DATA"];
 if (string.IsNullOrWhiteSpace(dataDirectory))
     dataDirectory = Path.Combine(Environment.CurrentDirectory, ".creatornetwork-data");
 
@@ -17,6 +18,7 @@ var jsonOptions = new JsonSerializerOptions(JsonSerializerDefaults.Web)
     DefaultIgnoreCondition = JsonIgnoreCondition.WhenWritingNull
 };
 
+builder.Services.TryAddSingleton<ICreatorNetworkAccessPolicy, LoopbackDevelopmentAccessPolicy>();
 builder.Services.AddSingleton(new FilePublicationStore(dataDirectory, jsonOptions));
 builder.Services.AddSingleton(new FileMediaStore(Path.Combine(dataDirectory, "media")));
 
@@ -27,9 +29,13 @@ app.MapGet("/health", () => Results.Ok(new { status = "local-demo", storage = "f
 app.MapGet("/v1/channels/{publicationId}", async Task<IResult> (
     string publicationId,
     HttpContext context,
+    ICreatorNetworkAccessPolicy accessPolicy,
     FilePublicationStore store,
     CancellationToken cancellationToken) =>
 {
+    if (!await accessPolicy.CanReadPublicationAsync(context, publicationId, cancellationToken))
+        return Results.NotFound(new { error = "publication.not_found", publicationId });
+
     StoredPublication? document = await store.GetDocumentAsync(publicationId, cancellationToken);
     if (document is null)
         return Results.NotFound(new { error = "publication.not_found", publicationId });
@@ -44,6 +50,8 @@ app.MapGet("/v1/channels/{publicationId}", async Task<IResult> (
 app.MapPut("/v1/channels/{publicationId}", async Task<IResult> (
     string publicationId,
     ChannelPublication publication,
+    HttpContext context,
+    ICreatorNetworkAccessPolicy accessPolicy,
     FilePublicationStore store,
     CancellationToken cancellationToken) =>
 {
@@ -53,6 +61,9 @@ app.MapPut("/v1/channels/{publicationId}", async Task<IResult> (
     IReadOnlyList<PublicationValidationError> errors = PublicationValidator.Validate(publication);
     if (errors.Count != 0)
         return Results.BadRequest(new { error = "publication.invalid", details = errors });
+
+    if (!await accessPolicy.CanWritePublicationAsync(context, publication, cancellationToken))
+        return Results.StatusCode(StatusCodes.Status403Forbidden);
 
     try
     {
@@ -74,9 +85,13 @@ app.MapPut("/v1/channels/{publicationId}", async Task<IResult> (
 app.MapPut("/v1/assets/{assetId}", async Task<IResult> (
     string assetId,
     HttpContext context,
+    ICreatorNetworkAccessPolicy accessPolicy,
     FileMediaStore store,
     CancellationToken cancellationToken) =>
 {
+    if (!await accessPolicy.CanWriteAssetAsync(context, assetId, cancellationToken))
+        return Results.StatusCode(StatusCodes.Status403Forbidden);
+
     string mediaType = context.Request.ContentType ?? string.Empty;
     long? expectedLength = context.Request.ContentLength;
     string? expectedSha256 = context.Request.Headers["X-Content-SHA256"].FirstOrDefault();
@@ -108,9 +123,13 @@ app.MapPut("/v1/assets/{assetId}", async Task<IResult> (
 app.MapGet("/v1/assets/{assetId}", async Task<IResult> (
     string assetId,
     HttpContext context,
+    ICreatorNetworkAccessPolicy accessPolicy,
     FileMediaStore store,
     CancellationToken cancellationToken) =>
 {
+    if (!await accessPolicy.CanReadAssetAsync(context, assetId, cancellationToken))
+        return Results.NotFound(new { error = "asset.not_found", assetId });
+
     try
     {
         MediaAssetDescriptor? descriptor = await store.GetDescriptorAsync(assetId, cancellationToken);
@@ -136,3 +155,6 @@ app.MapGet("/v1/assets/{assetId}", async Task<IResult> (
 });
 
 app.Run();
+
+
+public partial class Program { }
