@@ -51,7 +51,14 @@ public sealed class FilePublicationStore
         return _cache.GetOrAdd(publicationId, loaded);
     }
 
-    public async Task PutAsync(ChannelPublication publication, CancellationToken cancellationToken)
+    public Task PutAsync(ChannelPublication publication, CancellationToken cancellationToken) =>
+        PutAsync(publication, expectedETag: null, createOnly: false, cancellationToken);
+
+    public async Task PutAsync(
+        ChannelPublication publication,
+        string? expectedETag,
+        bool createOnly,
+        CancellationToken cancellationToken)
     {
         string id = publication.PublicationId;
         SemaphoreSlim gate = _writeLocks.GetOrAdd(id, static _ => new SemaphoreSlim(1, 1));
@@ -62,6 +69,13 @@ public sealed class FilePublicationStore
             // This in-process gate is sufficient for the single-process loopback prototype;
             // shared-directory multi-process hosting remains unsupported.
             StoredPublication? current = await GetDocumentAsync(id, cancellationToken);
+            if (createOnly && current is not null)
+                throw new PublicationPreconditionFailedException(id, "The publication already exists.");
+
+            if (!createOnly && expectedETag is not null &&
+                (current is null || !string.Equals(expectedETag, current.ETag, StringComparison.Ordinal)))
+                throw new PublicationPreconditionFailedException(id, "The supplied If-Match value does not match the current publication.");
+
             if (current is not null && publication.Revision <= current.Publication.Revision)
                 throw new PublicationRevisionConflictException(id, current.Publication.Revision, publication.Revision);
 
@@ -131,4 +145,13 @@ public sealed class PublicationRevisionConflictException : Exception
     public string PublicationId { get; }
     public long CurrentRevision { get; }
     public long AttemptedRevision { get; }
+}
+
+/// <summary>Raised when an HTTP conditional publication precondition is not satisfied.</summary>
+public sealed class PublicationPreconditionFailedException : Exception
+{
+    public PublicationPreconditionFailedException(string publicationId, string message)
+        : base(message) => PublicationId = publicationId;
+
+    public string PublicationId { get; }
 }
