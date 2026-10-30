@@ -106,6 +106,14 @@ public sealed class CreatorNodeAuthorizationTests
                 : new[] { get.Headers.ETag.ToString() });
             Assert.Equal(originalETag, fetchedETag);
 
+            using var duplicatePrecondition = new HttpRequestMessage(HttpMethod.Put, route)
+            {
+                Content = JsonContent.Create(CreatePublication(2))
+            };
+            duplicatePrecondition.Headers.TryAddWithoutValidation("If-Match", new[] { originalETag, originalETag });
+            using HttpResponseMessage duplicateResult = await client.SendAsync(duplicatePrecondition);
+            Assert.Equal(HttpStatusCode.BadRequest, duplicateResult.StatusCode);
+
             using var update = new HttpRequestMessage(HttpMethod.Put, route)
             {
                 Content = JsonContent.Create(CreatePublication(2))

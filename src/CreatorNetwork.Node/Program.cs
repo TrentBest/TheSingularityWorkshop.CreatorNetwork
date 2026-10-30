@@ -65,8 +65,13 @@ app.MapPut("/v1/channels/{publicationId}", async Task<IResult> (
     if (!await accessPolicy.CanWritePublicationAsync(context, publication, cancellationToken))
         return Results.StatusCode(StatusCodes.Status403Forbidden);
 
-    string? ifMatch = context.Request.Headers[HeaderNames.IfMatch].FirstOrDefault();
-    string? ifNoneMatch = context.Request.Headers[HeaderNames.IfNoneMatch].FirstOrDefault();
+    var ifMatchHeader = context.Request.Headers[HeaderNames.IfMatch];
+    var ifNoneMatchHeader = context.Request.Headers[HeaderNames.IfNoneMatch];
+    if (ifMatchHeader.Count > 1 || ifNoneMatchHeader.Count > 1)
+        return Results.BadRequest(new { error = "publication.invalid_precondition", message = "Send exactly one value for the selected conditional header." });
+
+    string? ifMatch = ifMatchHeader.Count == 1 ? ifMatchHeader[0] : null;
+    string? ifNoneMatch = ifNoneMatchHeader.Count == 1 ? ifNoneMatchHeader[0] : null;
     if (ifMatch is not null && ifNoneMatch is not null)
         return Results.BadRequest(new { error = "publication.invalid_precondition", message = "Send either If-Match or If-None-Match, not both." });
 
@@ -74,8 +79,14 @@ app.MapPut("/v1/channels/{publicationId}", async Task<IResult> (
     if (ifNoneMatch is not null && !createOnly)
         return Results.BadRequest(new { error = "publication.invalid_precondition", message = "If-None-Match must be '*'. " });
 
-    if (ifMatch is not null && (ifMatch.Contains(',') || ifMatch == "*" || ifMatch.StartsWith("W/", StringComparison.Ordinal)))
-        return Results.BadRequest(new { error = "publication.invalid_precondition", message = "If-Match must contain one strong ETag." });
+    if (ifMatch is not null &&
+        (ifMatch.Length < 2 ||
+         ifMatch[0] != '"' ||
+         ifMatch[^1] != '"' ||
+         ifMatch.Substring(1, ifMatch.Length - 2).Contains('"') ||
+         ifMatch.Contains(',') ||
+         ifMatch.StartsWith("W/", StringComparison.Ordinal)))
+        return Results.BadRequest(new { error = "publication.invalid_precondition", message = "If-Match must contain one syntactically valid strong ETag." });
 
     if (ifMatch is null && !createOnly)
         return Results.StatusCode(StatusCodes.Status428PreconditionRequired);
