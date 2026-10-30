@@ -58,6 +58,13 @@ public sealed class FilePublicationStore
         await gate.WaitAsync(cancellationToken);
         try
         {
+            // Revision is provider-enforced ordering, not merely creator-supplied metadata.
+            // This in-process gate is sufficient for the single-process loopback prototype;
+            // shared-directory multi-process hosting remains unsupported.
+            StoredPublication? current = await GetDocumentAsync(id, cancellationToken);
+            if (current is not null && publication.Revision <= current.Publication.Revision)
+                throw new PublicationRevisionConflictException(id, current.Publication.Revision, publication.Revision);
+
             byte[] bytes = JsonSerializer.SerializeToUtf8Bytes(publication, _jsonOptions);
             var document = new StoredPublication(publication, bytes);
             string targetPath = GetPath(id);
@@ -108,4 +115,20 @@ internal sealed class StoredPublication
     public ChannelPublication Publication { get; }
     public byte[] JsonBytes { get; }
     public string ETag { get; }
+}
+
+/// <summary>Raised when a publication update does not advance its currently stored revision.</summary>
+public sealed class PublicationRevisionConflictException : Exception
+{
+    public PublicationRevisionConflictException(string publicationId, long currentRevision, long attemptedRevision)
+        : base($"Publication '{publicationId}' is at revision {currentRevision}; attempted revision {attemptedRevision} must be greater.")
+    {
+        PublicationId = publicationId;
+        CurrentRevision = currentRevision;
+        AttemptedRevision = attemptedRevision;
+    }
+
+    public string PublicationId { get; }
+    public long CurrentRevision { get; }
+    public long AttemptedRevision { get; }
 }
