@@ -42,9 +42,11 @@ The FSM_REST development source currently exposes `TheSingularityWorkshop.FSM_RE
 
 ## Publication revision behavior
 
-The local file provider now enforces strictly increasing revisions for an existing publication. A first stored revision must pass normal positive-revision validation; each subsequent update must have a revision greater than the currently stored revision. Equal or lower revisions are rejected with HTTP 409 and the stable error code `publication.revision_conflict`, including the current and attempted revision values. This prevents a stale writer from silently replacing a newer publication within the supported single-process node.
+The HTTP publication write endpoint now requires a conditional request: use `If-None-Match: *` to create a publication that must not already exist, or one strong `If-Match: "<etag>"` value to replace the exact version previously read. Requests without either precondition receive HTTP 428; stale or failed conditions receive HTTP 412; malformed or combined preconditions receive HTTP 400. Successful writes return the new ETag. The store evaluates the precondition while holding its per-publication in-process write gate, before replacing the manifest.
 
-This is not a complete history or distributed concurrency protocol: the provider still stores only the latest manifest, does not retain prior revisions, and does not support multiple node processes sharing one data directory. Authentication and publisher authorization are also still absent. A revision number is ordering metadata, not proof that the caller is entitled to publish.
+The local file provider also enforces strictly increasing revisions for an existing publication. A first stored revision must pass normal positive-revision validation; each subsequent update must have a revision greater than the currently stored revision. Equal or lower revisions are rejected with HTTP 409 and the stable error code `publication.revision_conflict`, including the current and attempted revision values. This prevents a stale writer from silently replacing a newer publication within the supported single-process node.
+
+This closes lost updates between cooperating HTTP writers within one Node process. It is not a complete history or distributed concurrency protocol: the provider still stores only the latest manifest, does not retain prior revisions, and does not support multiple node processes sharing one data directory. Authentication and publisher authorization are also still absent. A revision number is ordering metadata, not proof that the caller is entitled to publish.
 
 ## Security and deployment
 
