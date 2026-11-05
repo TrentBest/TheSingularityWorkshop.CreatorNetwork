@@ -1,0 +1,17 @@
+{
+  "repository": "TrentBest/TheSingularityWorkshop.CreatorNetwork",
+  "policy": "exactly-master-and-development",
+  "required_branches": [
+    "development",
+    "master"
+  ],
+  "actual_branches": [
+    "development",
+    "master"
+  ],
+  "branch_count": 2,
+  "status": "COMPLIANT",
+  "evaluated_at": "2026-11-05T04:35:43Z",
+  "workflow_run": "https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/41968762822",
+  "triggering_commit": "b1bc618ea895b434e9273b155bc66ed4add1580f"
+}
