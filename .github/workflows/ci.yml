@@ -37,7 +37,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
       - name: Restore and test contracts, authoring, and node
         run: dotnet test tests/CreatorNetwork.Contracts.Tests/CreatorNetwork.Contracts.Tests.csproj --configuration Release --logger "trx;LogFileName=contracts-tests.trx"
       - name: Restore and test Profiles integration
@@ -66,7 +66,7 @@ jobs:
       - name: Set up .NET
         uses: actions/setup-dotnet@v4
         with:
-          dotnet-version: 8.0.x
+          dotnet-version: 10.0.x
       - name: Run benchmark suite
         run: dotnet run --project benchmarks/CreatorNetwork.Benchmarks/CreatorNetwork.Benchmarks.csproj --configuration Release -- --filter '*'
       - name: Upload BenchmarkDotNet results
