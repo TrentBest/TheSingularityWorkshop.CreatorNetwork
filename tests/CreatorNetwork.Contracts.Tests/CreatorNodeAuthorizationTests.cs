@@ -53,7 +53,7 @@ public sealed class CreatorNodeAuthorizationTests
             using HttpResponseMessage assetRead = await client.GetAsync("/v1/assets/asset-denied");
 
             Assert.Equal(HttpStatusCode.Forbidden, publicationWrite.StatusCode);
-            Assert.Equal(HttpStatusCode.NotFound, publicationRead.StatusCode, await publicationRead.Content.ReadAsStringAsync());
+            Assert.True(publicationRead.StatusCode == HttpStatusCode.NotFound, $"Expected NotFound, received {publicationRead.StatusCode}: {await publicationRead.Content.ReadAsStringAsync()}");
             Assert.Equal(HttpStatusCode.Forbidden, assetWrite.StatusCode);
             Assert.Equal(HttpStatusCode.NotFound, assetRead.StatusCode);
             Assert.Equal(4, policy.DecisionCount);
@@ -86,7 +86,7 @@ public sealed class CreatorNodeAuthorizationTests
             const string route = "/v1/channels/publication%3Aconditional";
 
             using var missingPrecondition = await client.PutAsJsonAsync(route, CreatePublication(1));
-            Assert.Equal((HttpStatusCode)428, missingPrecondition.StatusCode, await missingPrecondition.Content.ReadAsStringAsync());
+            Assert.True(missingPrecondition.StatusCode == (HttpStatusCode)428, $"Expected PreconditionRequired, received {missingPrecondition.StatusCode}: {await missingPrecondition.Content.ReadAsStringAsync()}");
 
             using var create = new HttpRequestMessage(HttpMethod.Put, route)
             {
