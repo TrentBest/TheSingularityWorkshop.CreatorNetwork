@@ -22,7 +22,7 @@ concurrency:
 
 jobs:
   build-and-test:
-    name: Build and test (.NET 8)
+    name: Build and test (.NET 10)
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
