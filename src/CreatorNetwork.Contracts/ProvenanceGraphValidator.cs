@@ -46,6 +46,12 @@ public static class ProvenanceGraphValidator
 
             if (string.IsNullOrWhiteSpace(record.ActorId))
                 Add(ref errors, "provenance.actor.required", field + ".actorId", "Identify the actor who performed the operation.");
+            if (!Enum.IsDefined(typeof(ProvenanceOriginatorStatus), record.OriginatorStatus))
+                Add(ref errors, "provenance.originator_status.invalid", field + ".originatorStatus", "The originator status is not supported.");
+            if (record.OriginatorStatus == ProvenanceOriginatorStatus.Claimed && string.IsNullOrWhiteSpace(record.OriginatorId))
+                Add(ref errors, "provenance.originator.required", field + ".originatorId", "An originator identity is required when the originator status is claimed.");
+            if (record.OriginatorStatus == ProvenanceOriginatorStatus.Unknown && !string.IsNullOrWhiteSpace(record.OriginatorId))
+                Add(ref errors, "provenance.originator.status_conflict", field + ".originatorId", "An unknown originator status cannot include an originator identity.");
             if (string.IsNullOrWhiteSpace(record.Operation))
                 Add(ref errors, "provenance.operation.required", field + ".operation", "Describe the operation performed.");
             if (record.OccurredAt.Offset != TimeSpan.Zero)
