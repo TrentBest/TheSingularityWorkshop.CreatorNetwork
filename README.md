@@ -12,7 +12,7 @@ CreatorNetwork is the foundation for a creator-owned internet: not another desti
 
 The repository contains a provisional provider-neutral publication contract library, validation tests, a loopback-only file-backed Creator Node prototype, a host-neutral .NET authoring client for recorded-media upload and explicit publication, named performance benchmarks, and a source-integrated Profiles publication adapter with focused tests. The adapter requires a trusted host resolver for publisher/persona selection and audience-specific disclosure. The current .NET 10 CI run passes the contract/authoring/node tests, Profiles integration tests, and benchmark build ([run](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/44882045589)); the manual BenchmarkDotNet execution was skipped. Independent publisher/consumer programs and the complete export/import path remain unproven; we distinguish working code from planned capabilities.
 
-**[Start with the concept](docs/THEORY.md) · [Understand the architecture](docs/ARCHITECTURE.md) · [First vertical slice](docs/GETTING_STARTED.md) · [Local media assets and authoring client](docs/MEDIA_ASSETS.md) · [Creator studio, capture, and streaming](docs/CREATOR_STUDIO_AND_STREAMING.md) · [Profiles integration](docs/PROFILES_INTEGRATION.md) · [Documentation index](DOCUMENTATION_INDEX.md)**
+**[Start with the concept](docs/THEORY.md) · [Understand the architecture](docs/ARCHITECTURE.md) · [First vertical slice](docs/GETTING_STARTED.md) · [Local media assets and authoring client](docs/MEDIA_ASSETS.md) · [Creator studio, capture, and streaming](docs/CREATOR_STUDIO_AND_STREAMING.md) · [Profiles integration](docs/PROFILES_INTEGRATION.md) · [Provenance and rights-aware representations](docs/PROVENANCE_AND_REPRESENTATIONS.md) · [Documentation index](DOCUMENTATION_INDEX.md)**
 
 ## 🟣 01 — Why CreatorNetwork?
 
@@ -27,6 +27,7 @@ CreatorNetwork separates those concerns:
 - **Many manifestations:** one publication can be experienced through a website, desktop application, educational experience, virtual environment, or independent player.
 - **Cross-platform creation:** creators can combine tools, devices, media, services, data, simulations, MicroBundles, and interactive environments to invent forms of expression beyond today's platform-specific post formats.
 - **Composable meaning:** MicroBundles compose meaning by reference, not duplication. Reusable content should be referenced rather than copied into every experience.
+- **Traceable creative lineage:** provenance records distinguish real-world subjects, logical works, exact source files, modifiers, and derivatives. Lineage is an assertion to verify—not proof of ownership or permission.
 - **Creator independence:** creators can move their work between compatible providers and clients. Discovery and aggregation are optional services, not owners of creator content or audience relationships.
 
 This is infrastructure for platform choice, not a claim that protocols alone solve economics, legal obligations, moderation, or distribution.
@@ -43,7 +44,7 @@ The publication contract is the portable center. Storage, discovery, delivery, a
 
 | Component | Responsibility |
 |---|---|
-| **CreatorNetwork** | Portable publishing contracts, creator-facing identity references, content references, discovery interfaces, and migration/export. |
+| **CreatorNetwork** | Portable publishing contracts, provenance and rights declarations, creator-facing identity references, content references, discovery interfaces, and migration/export. |
 | [Profiles](https://github.com/TrentBest/TheSingularityWorkshop.Profiles) | Shared domain semantics for entities, claims, relationships, and observer-specific disclosure. CreatorNetwork wire contracts carry only the approved publication-safe projection; they do not replace or serialize a full Profile. |
 | [MicroBundleDomain](https://github.com/TrentBest/TheSingularityWorkshop.MicroBundleDomain) | Domain contracts for independently meaningful MicroBundles. CreatorNetwork may reference this model where it fits; it does not redefine it. |
 | [FSM_COS](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS) | Resolves and assembles runtime capabilities for a host. It is not the creator registry, media host, or recommendation authority. |
@@ -69,6 +70,7 @@ The contract models, validator, local Creator Node prototype, injectable host-au
 
 - **Understand the why:** [Theory](docs/THEORY.md).
 - **Understand ownership and boundaries:** [Architecture](docs/ARCHITECTURE.md).
+- **Understand source lineage, museum-approved representations, and rights boundaries:** [Provenance and rights-aware representations](docs/PROVENANCE_AND_REPRESENTATIONS.md).
 - **Follow the first proving path:** [Getting Started](docs/GETTING_STARTED.md).
 - **Integrate profile identity and disclosure safely:** [Profiles Integration](docs/PROFILES_INTEGRATION.md).
 - **Upload and retrieve a local recorded-media asset:** [Local Media Assets](docs/MEDIA_ASSETS.md). This prototype is loopback-only and not production-secure.

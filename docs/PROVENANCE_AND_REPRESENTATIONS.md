@@ -23,7 +23,8 @@ An additive `ProvenanceRecord` describes one operation and one exact output arti
 - `RecordId`: stable identifier for the assertion.
 - `OutputContentId`: exact output artifact/version.
 - `ActorId`: actor asserted to have performed the operation.
-- `OriginatorId`: optional asserted originator of the represented work.
+- `OriginatorId`: asserted originator identifier when one is claimed.
+- `OriginatorStatus`: explicit `Claimed`, `Unknown`, or `Disputed` state. A claimed identity is still an assertion, not a verification result.
 - `Operation`: capture, scan, edit, composite, conversion, approved representation, or another documented operation.
 - `OccurredAt`: asserted UTC time.
 - `Inputs`: typed upstream references, including exact input artifacts.
@@ -32,7 +33,7 @@ An additive `ProvenanceRecord` describes one operation and one exact output arti
 
 Each derivative receives a new output artifact identity and a new record. A composite lists every contributing input. The record is append-only by design: corrections should be represented by a superseding assertion or a new graph snapshot, not by silently rewriting the historical account.
 
-The graph validator checks required fields, duplicate record/output identifiers, self-reference, and cycles among records supplied together. A content-artifact reference not represented by a record in the supplied snapshot is treated as an external boundary, not silently rejected. Therefore, structural validation does **not** prove that ancestry is complete. Importers and publishers must state the graph coverage they have actually verified.
+The graph validator checks required fields, explicit originator-claim consistency, duplicate record/output identifiers, self-reference, and cycles among records supplied together. A content-artifact reference not represented by a record in the supplied snapshot is treated as an external boundary, not silently rejected. Therefore, structural validation does **not** prove that ancestry is complete. Importers and publishers must state the graph coverage they have actually verified.
 
 ## 3. Provenance is not proof or permission
 

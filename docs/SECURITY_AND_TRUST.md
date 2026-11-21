@@ -14,7 +14,9 @@ Subscriptions, viewing history, drafts, private publications, and moderation rep
 
 ## Content rights and attribution
 
-A publication may carry attribution and rights declarations, but metadata is not legal enforcement. Hosts and clients need clear behavior for disputed ownership, takedown requests, licensed reuse, and unavailable content. Migration tooling must not imply that an asset may be copied merely because it can be downloaded.
+A publication may carry attribution and rights declarations, but metadata is not legal enforcement. Provenance records describe asserted origin, inputs, actors, transformations, and exact output artifacts; they do not prove that an asserted originator owns the work or that a derivative is licensed. Represent unknown and disputed originator claims explicitly. Hosts and clients need clear behavior for disputed ownership, takedown requests, licensed reuse, and unavailable content. Migration tooling must not imply that an asset may be copied merely because it can be downloaded.
+
+Rights must be scoped to individual resources and actions. A venue/layout grant does not automatically authorize reuse of every work displayed within it. A source-approved alternate representation is a distinct artifact with its own provenance and rights scope. A consumer must not transform a restricted source as a workaround. See [Provenance and Rights-Aware Representations](PROVENANCE_AND_REPRESENTATIONS.md).
 
 ## Moderation and abuse response
 
