@@ -133,7 +133,9 @@ Not implemented:
 - changes to the existing `creator-network.channel/1` wire contract;
 - automatic import of remote source URIs or remote graph traversal.
 
-The validator is a structural safety net, not a trust engine. Do not publish or consume a restricted resource merely because its provenance graph passes validation.
+The cross-reference overload of `RepresentationOfferValidator.Validate(offer, provenance, rights)` additionally checks that the supplied provenance record is the referenced record, its output is the exact alternative artifact, the offered source artifact appears as an input, and the supplied rights declaration is the referenced declaration scoped to that exact alternative. Disputed or withdrawn declarations cannot support an active offer. These checks prevent accidental cross-wiring of records; they still do not prove publisher authority or authorize a request.
+
+The validators are structural safety nets, not a trust engine. Do not publish or consume a restricted resource merely because its provenance graph or representation offer passes validation.
 
 ## 10. Next acceptance proof
 
