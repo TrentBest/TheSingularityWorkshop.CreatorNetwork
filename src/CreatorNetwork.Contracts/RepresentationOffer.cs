@@ -85,6 +85,62 @@ public static class RepresentationOfferValidator
         return errors is null ? Array.Empty<PublicationValidationError>() : errors;
     }
 
+    /// <summary>
+    /// Validates that an offer points to the exact alternate output and its own rights scope.
+    /// This is reference consistency only; the host must still verify publisher authority and authorize use.
+    /// </summary>
+    public static IReadOnlyList<PublicationValidationError> Validate(
+        RepresentationOffer? offer,
+        ProvenanceRecord? provenance,
+        RightsDeclaration? rights)
+    {
+        IReadOnlyList<PublicationValidationError> basic = Validate(offer);
+        var errors = new List<PublicationValidationError>(basic);
+        if (offer is null)
+            return errors;
+
+        if (provenance is null)
+        {
+            errors.Add(new PublicationValidationError("representation.provenance.missing", "provenanceRecord", "The referenced provenance record must be supplied."));
+        }
+        else
+        {
+            if (!string.Equals(provenance.RecordId, offer.ProvenanceRecordId, StringComparison.Ordinal))
+                errors.Add(new PublicationValidationError("representation.provenance.mismatch", "provenanceRecordId", "The supplied provenance record does not match the offer reference."));
+            if (!string.Equals(provenance.OutputContentId, offer.AlternativeContentId, StringComparison.Ordinal))
+                errors.Add(new PublicationValidationError("representation.provenance.output_mismatch", "alternativeContentId", "The provenance record must describe the exact alternative artifact."));
+            bool sourceIsInput = false;
+            for (int i = 0; i < provenance.Inputs.Count; i++)
+            {
+                ProvenanceReference? input = provenance.Inputs[i];
+                if (input is not null && input.Kind == ProvenanceReferenceKind.ContentArtifact &&
+                    string.Equals(input.Id, offer.SourceContentId, StringComparison.Ordinal))
+                {
+                    sourceIsInput = true;
+                    break;
+                }
+            }
+            if (!sourceIsInput)
+                errors.Add(new PublicationValidationError("representation.provenance.source_missing", "sourceContentId", "The alternative provenance must identify the offered source artifact as an input."));
+        }
+
+        if (rights is null)
+        {
+            errors.Add(new PublicationValidationError("representation.rights.missing", "rightsDeclaration", "The referenced rights declaration must be supplied."));
+        }
+        else
+        {
+            if (!string.Equals(rights.DeclarationId, offer.RightsDeclarationId, StringComparison.Ordinal))
+                errors.Add(new PublicationValidationError("representation.rights.mismatch", "rightsDeclarationId", "The supplied rights declaration does not match the offer reference."));
+            if (!string.Equals(rights.ResourceId, offer.AlternativeContentId, StringComparison.Ordinal))
+                errors.Add(new PublicationValidationError("representation.rights.resource_mismatch", "alternativeContentId", "The rights declaration must be scoped to the exact alternative artifact."));
+            if (rights.Status != RightsDeclarationStatus.Asserted)
+                errors.Add(new PublicationValidationError("representation.rights.not_active", "rightsDeclarationId", "A disputed or withdrawn rights declaration cannot support an active representation offer."));
+        }
+
+        return errors;
+    }
+
     private static void Add(ref List<PublicationValidationError>? errors, string code, string field, string message)
     {
         errors ??= new List<PublicationValidationError>(4);
