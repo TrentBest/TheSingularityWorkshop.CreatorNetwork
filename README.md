@@ -10,7 +10,7 @@
 
 CreatorNetwork is the foundation for a creator-owned internet: not another destination that asks everyone to move into one platform, but interoperable contracts and reference implementations that let independent creators publish once and reach many clients without surrendering the relationship to a single platform.
 
-The repository contains the first provider-neutral contract library, validation tests, a loopback-only file-backed Creator Node prototype, a host-neutral .NET authoring client for recorded-media upload and explicit publication, named performance benchmarks, and a source-integrated Profiles publication adapter with focused tests. The adapter requires a trusted host resolver for publisher/persona selection and audience-specific disclosure; test execution remains pending. Independent publisher/consumer programs and the complete export/import path remain in progress; we distinguish working code from planned capabilities.
+The repository contains a provisional provider-neutral publication contract library, validation tests, a loopback-only file-backed Creator Node prototype, a host-neutral .NET authoring client for recorded-media upload and explicit publication, named performance benchmarks, and a source-integrated Profiles publication adapter with focused tests. The adapter requires a trusted host resolver for publisher/persona selection and audience-specific disclosure. The current .NET 10 CI run passes the contract/authoring/node tests, Profiles integration tests, and benchmark build ([run](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/44882045589)); the manual BenchmarkDotNet execution was skipped. Independent publisher/consumer programs and the complete export/import path remain unproven; we distinguish working code from planned capabilities.
 
 **[Start with the concept](docs/THEORY.md) · [Understand the architecture](docs/ARCHITECTURE.md) · [First vertical slice](docs/GETTING_STARTED.md) · [Local media assets and authoring client](docs/MEDIA_ASSETS.md) · [Creator studio, capture, and streaming](docs/CREATOR_STUDIO_AND_STREAMING.md) · [Profiles integration](docs/PROFILES_INTEGRATION.md) · [Documentation index](DOCUMENTATION_INDEX.md)**
 
@@ -21,17 +21,19 @@ A centralized platform commonly bundles identity, publishing, storage, discovery
 CreatorNetwork separates those concerns:
 
 - **Creator-owned identity:** identity is not merely an account at one hosting provider.
-- **Portable publications:** channels and manifests reference content without tying it to one app.
+- **Portable publications:** channels, Experiences, and typed resources can be referenced without tying them to one app or hosting provider.
 - **Replaceable hosting:** content can move or replicate without rebuilding creator identity.
 - **Independent discovery:** clients and communities choose discovery and recommendation policies.
-- **Many manifestations:** one publication can appear in a website, desktop application, educational experience, virtual environment, or independent player.
+- **Many manifestations:** one publication can be experienced through a website, desktop application, educational experience, virtual environment, or independent player.
+- **Cross-platform creation:** creators can combine tools, devices, media, services, data, simulations, MicroBundles, and interactive environments to invent forms of expression beyond today's platform-specific post formats.
 - **Composable meaning:** MicroBundles compose meaning by reference, not duplication. Reusable content should be referenced rather than copied into every experience.
+- **Creator independence:** creators can move their work between compatible providers and clients. Discovery and aggregation are optional services, not owners of creator content or audience relationships.
 
 This is infrastructure for platform choice, not a claim that protocols alone solve economics, legal obligations, moderation, or distribution.
 
 ## 🟦 02 — What is the system?
 
-At the center is a portable publication: creator identity, channel or collection, versioned metadata, and references to media or other content. Independent services may store, replicate, index, recommend, or deliver those publications. Clients decide how to present them.
+At the center is a portable publication: creator identity reference, versioned metadata, and references to authored Experiences, MicroBundles, media, and other typed resources. The authoring and composition domains create the work; CreatorNetwork publishes and distributes portable references. Independent services may store, replicate, index, recommend, or deliver those publications. Clients declare their capabilities and decide how to present compatible work.
 
 <p align="center"><img src="docs/assets/creator-network-overview.svg" alt="Creator-owned identity and publication manifests connect to replaceable hosting and independent discovery; multiple clients consume the same publications." width="100%"></p>
 
@@ -56,12 +58,12 @@ The first proof is intentionally smaller than a social network:
 
 1. Create a stable creator identity.
 2. Publish a versioned channel manifest with metadata and content references.
-3. Serve the publication from a local or HTTPS-backed Creator Node.
+3. Serve the publication from the loopback-only local Creator Node prototype.
 4. Discover and render it from a separate client.
 5. Export the publication and move it to another host without changing creator identity.
 6. Consume the same publication from a separate Experience without hardcoding its content.
 
-The contract models, validator, and local Creator Node prototype are implemented. The Profiles publication adapter gates on an authenticated principal, validates the audience identity, delegates trusted persona resolution to a host-provided resolver, and fails closed when no approved representation is returned. Its source-integrated tests passed in [CI run #5](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/40636160069); this verifies the current adapter test suite, not a production host's authentication or authorization. Independent publisher/consumer programs and export/import are still to come; the six-step workflow is an acceptance target, not a claim that it already runs.
+The contract models, validator, local Creator Node prototype, injectable host-authorization seam, conditional publication writes, and Profiles adapter are implemented. The default node policy is loopback-only and is not production authentication or private-audience enforcement. Current .NET 10 tests pass in [CI run](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/44882045589), including the Profiles integration suite; this validates the repository's test fixtures, not a production host. Independent publisher/consumer programs and end-to-end export/import remain to come; the six-step workflow is an acceptance target, not a claim that it already runs.
 
 ## 🟪 05 — Build the open network
 
