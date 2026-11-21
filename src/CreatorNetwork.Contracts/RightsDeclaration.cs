@@ -24,6 +24,10 @@ public enum RightsAction
     Remix = 7,
     /// <summary>Grant downstream rights to another party.</summary>
     Sublicense = 8,
+    /// <summary>Retain a provider-controlled cache copy.</summary>
+    Cache = 10,
+    /// <summary>Replicate the resource to another provider or storage location.</summary>
+    Replicate = 11,
     /// <summary>Use the resource in a commercial context.</summary>
     CommercialUse = 9
 }
