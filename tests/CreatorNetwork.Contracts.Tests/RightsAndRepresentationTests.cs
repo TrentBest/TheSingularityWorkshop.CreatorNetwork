@@ -62,6 +62,25 @@ public sealed class RightsAndRepresentationTests
     }
 
     [Fact]
+    public void RepresentationOfferRejectsRightsForTheWrongArtifact()
+    {
+        var provenance = new ProvenanceRecord(
+            "provenance:alternative", "content:alternative", "publisher:museum", null,
+            "approved-representation", DateTimeOffset.UtcNow,
+            new[] { new ProvenanceReference(ProvenanceReferenceKind.ContentArtifact, "content:source") });
+        var rights = new RightsDeclaration(
+            "rights:other", "content:other", "rights-holder:museum",
+            new[] { RightsAction.Display });
+        var offer = new RepresentationOffer(
+            "offer:wrong-rights", "publisher:museum", "work:one",
+            "content:source", "content:alternative", "gallery.centerpiece",
+            "provenance:alternative", "rights:other");
+
+        Assert.Contains(RepresentationOfferValidator.Validate(offer, provenance, rights),
+            x => x.Code == "representation.rights.resource_mismatch");
+    }
+
+    [Fact]
     public void RepresentationOfferCannotUseSourceAsItsOwnAlternative()
     {
         var offer = new RepresentationOffer(
@@ -101,7 +120,7 @@ public sealed class RightsAndRepresentationTests
         Assert.Empty(ProvenanceGraphValidator.Validate(new[] { sourceProvenance, alternativeProvenance }));
         Assert.Empty(RightsDeclarationValidator.Validate(originalRights));
         Assert.Empty(RightsDeclarationValidator.Validate(alternativeRights));
-        Assert.Empty(RepresentationOfferValidator.Validate(offer));
+        Assert.Empty(RepresentationOfferValidator.Validate(offer, alternativeProvenance, alternativeRights));
         Assert.DoesNotContain(RightsAction.Embed, originalRights.GrantedActions);
         Assert.Contains(RightsAction.Embed, alternativeRights.GrantedActions);
         Assert.DoesNotContain(RightsAction.Transform, alternativeRights.GrantedActions);
