@@ -17,7 +17,8 @@ public sealed class ProvenanceGraphValidatorTests
             "originator:museum",
             "capture",
             DateTimeOffset.UtcNow,
-            new[] { new ProvenanceReference(ProvenanceReferenceKind.RealWorldReferent, "object:statue") });
+            new[] { new ProvenanceReference(ProvenanceReferenceKind.RealWorldReferent, "object:statue") },
+            originatorStatus: ProvenanceOriginatorStatus.Claimed);
 
         var derivative = new ProvenanceRecord(
             "record:low-poly",
