@@ -33,7 +33,8 @@ public sealed class ProvenanceGraphValidatorTests
             },
             new[] { "Reduced polygon count using the museum-approved representation workflow." },
             "Museum representation pipeline",
-            "1.0");
+            "1.0",
+            ProvenanceOriginatorStatus.Claimed);
 
         Assert.Empty(ProvenanceGraphValidator.Validate(new[] { source, derivative }));
     }
@@ -70,6 +71,17 @@ public sealed class ProvenanceGraphValidatorTests
         Assert.Contains(errors, x => x.Code == "provenance.actor.required");
         Assert.Contains(errors, x => x.Code == "provenance.operation.required");
         Assert.Contains(errors, x => x.Code == "provenance.timestamp.not_utc");
+    }
+
+    [Fact]
+    public void ClaimedOriginatorMustBeIdentified()
+    {
+        var record = new ProvenanceRecord(
+            "record:originator", "content:originator", "actor:one", null, "capture",
+            DateTimeOffset.UtcNow, originatorStatus: ProvenanceOriginatorStatus.Claimed);
+
+        Assert.Contains(ProvenanceGraphValidator.Validate(new[] { record }),
+            x => x.Code == "provenance.originator.required");
     }
 
     [Fact]
