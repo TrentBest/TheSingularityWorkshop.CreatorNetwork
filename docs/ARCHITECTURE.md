@@ -14,6 +14,7 @@ This document describes the intended system boundary. It distinguishes portable 
 | Creator identity reference | Stable identity reference intentionally published in a channel | Hosting account as the only identifier, proof of authentication, or permission to expose canonical identity |
 | Publication contracts | Channel metadata, versions, content references, attribution, visibility declarations, and references to provenance/rights declarations | Transcoding, storage engines, UI, or profile disclosure policy |
 | Provenance contracts | Typed lineage references and immutable operation assertions linking exact input and output artifacts | Proof of authorship, license evaluation, identity verification, or host authorization |
+| Rights and representation declarations | Resource-scoped action grants and source-publisher assertions mapping a source artifact to an approved alternative | Legal conclusions, verified rights-holder authority, automatic substitution, or serving-boundary enforcement |
 | Creator Node | Self-hostable implementation for publishing and serving records | Mandatory global registry or exclusive host |
 | Content provider | Media bytes, object identity, availability, replication, delivery | Creator identity or discovery policy |
 | Discovery provider | Indexing, search, feeds, recommendations under a declared policy | Exclusive authority over which publications exist |
@@ -84,7 +85,7 @@ For the implementation-grounded HTTP/REST call-site classification and FSM_REST 
 
 ## 7. Provenance and rights are separate from publication identity
 
-A content reference identifies an artifact; a provenance record describes asserted ancestry and transformations. Neither establishes legal permission. Preserve the distinction between a real-world referent, a logical work, and each exact digital artifact/version. Derivatives and composites must identify their inputs, actor, operation, output, and changes. An unknown or disputed originator must be represented as such rather than silently inferred from the uploader.
+A content reference identifies an artifact; a provenance record describes asserted ancestry and transformations. A rights declaration names explicit actions for one exact resource, and a representation offer links a source artifact to a distinct alternate artifact, its provenance, and its own rights declaration. Neither establishes legal permission. Preserve the distinction between a real-world referent, a logical work, and each exact digital artifact/version. Derivatives and composites must identify their inputs, actor, operation, output, and changes. An unknown or disputed originator must be represented as such rather than silently inferred from the uploader.
 
 Rights are action-specific and scoped to the actual resource or representation. A grant to reuse a museum building does not grant rights to every artwork inside it. Where a source owner provides an approved alternative representation, consumers resolve that source-controlled alternative through semantic roles and re-evaluate compatibility and authorization; they do not transform a restricted original as a fallback. See [Provenance and Rights-Aware Representations](PROVENANCE_AND_REPRESENTATIONS.md).
 

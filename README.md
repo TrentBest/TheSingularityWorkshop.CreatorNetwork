@@ -28,6 +28,7 @@ CreatorNetwork separates those concerns:
 - **Cross-platform creation:** creators can combine tools, devices, media, services, data, simulations, MicroBundles, and interactive environments to invent forms of expression beyond today's platform-specific post formats.
 - **Composable meaning:** MicroBundles compose meaning by reference, not duplication. Reusable content should be referenced rather than copied into every experience.
 - **Traceable creative lineage:** provenance records distinguish real-world subjects, logical works, exact source files, modifiers, and derivatives. Lineage is an assertion to verify—not proof of ownership or permission.
+- **Granular reuse:** rights declarations are scoped to exact resources and explicit actions. Cache, replication, transformation, redistribution, and commercial use are not implied by display permission.
 - **Creator independence:** creators can move their work between compatible providers and clients. Discovery and aggregation are optional services, not owners of creator content or audience relationships.
 
 This is infrastructure for platform choice, not a claim that protocols alone solve economics, legal obligations, moderation, or distribution.
@@ -44,7 +45,7 @@ The publication contract is the portable center. Storage, discovery, delivery, a
 
 | Component | Responsibility |
 |---|---|
-| **CreatorNetwork** | Portable publishing contracts, provenance and rights declarations, creator-facing identity references, content references, discovery interfaces, and migration/export. |
+| **CreatorNetwork** | Portable publishing contracts, provenance and rights declarations, source-approved representation references, creator-facing identity references, content references, discovery interfaces, and migration/export. |
 | [Profiles](https://github.com/TrentBest/TheSingularityWorkshop.Profiles) | Shared domain semantics for entities, claims, relationships, and observer-specific disclosure. CreatorNetwork wire contracts carry only the approved publication-safe projection; they do not replace or serialize a full Profile. |
 | [MicroBundleDomain](https://github.com/TrentBest/TheSingularityWorkshop.MicroBundleDomain) | Domain contracts for independently meaningful MicroBundles. CreatorNetwork may reference this model where it fits; it does not redefine it. |
 | [FSM_COS](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS) | Resolves and assembles runtime capabilities for a host. It is not the creator registry, media host, or recommendation authority. |

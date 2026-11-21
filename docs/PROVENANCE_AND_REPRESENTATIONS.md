@@ -49,7 +49,9 @@ Keep these separate:
 
 A creator may assert that they originated a work. A museum may assert that it controls a collection or a particular representation. A claimant may submit evidence. Those statements remain distinguishable from independently verified facts and from the host's authorization decision.
 
-The initial contract deliberately does not encode a universal legal license language or calculate whether a use is lawful. Rights declarations must be action-specific and may distinguish display, download, transform, perform, embed, remix, redistribute, sublicense, and commercial use. A grant for one action must not imply another.
+The initial contract deliberately does not encode a universal legal license language or calculate whether a use is lawful. The additive `RightsDeclaration` identifies one exact resource, an asserted rights holder, an explicit set of granted actions, assertion status, optional license reference, audience/territory scope, and validity window. Actions distinguish hosting, display, performance, transformation, embedding, download, redistribution, remix, sublicensing, caching, replication, and commercial use. An unlisted action is not granted. A grant for one action must not imply another.
+
+The status is `Asserted`, `Disputed`, or `Withdrawn`; a disputed or withdrawn declaration must not be treated as an active grant. A declaration is still a claim, not proof that the declaring identity controls the work. A trusted host verifies the claimant's authority and makes the contextual authorization decision.
 
 ## 4. Museum-controlled subresources and approved alternatives
 
@@ -65,6 +67,8 @@ A museum or collection owner can be both a publisher and the rights authority fo
 Permission to reuse the building does not automatically grant permission to reuse the art displayed inside it. A publication must not flatten a venue into one blanket rights decision.
 
 When an original representation is restricted, the source owner may publish an approved substitute. The consumer requests a semantic role (for example, `gallery.centerpiece`) and resolves an eligible representation through the source owner's declared alternatives. The resolver evaluates the selected artifact's own rights, provenance, compatibility, and version. It must not independently transform a restricted source to evade the restriction.
+
+A `RepresentationOffer` ties the publisher assertion to the subject, exact source artifact, distinct alternative artifact, semantic role, alternative provenance record, and a rights declaration scoped to the alternative. It is a source-published mapping, not proof that the publisher has authority or that the consumer may use it.
 
 A depolygon or simplification workflow is a transformation, not a rights bypass. It may run only when the relevant transformation and resulting use are authorized. The output receives a new content identity and provenance record identifying the exact source, actor, tool/version, and changes.
 
@@ -119,11 +123,13 @@ Implemented in the provider-neutral Contracts assembly:
 - `ProvenanceReferenceKind` and `ProvenanceReference`;
 - immutable, defensively snapshotted `ProvenanceRecord`;
 - `ProvenanceGraphValidator` structural checks for required fields, duplicate IDs/outputs, self-reference, and cycles;
+- `RightsDeclaration` and its validator for exact-resource scope, explicit action grants, claim status, and validity windows;
+- `RepresentationOffer` and its validator for source-to-alternative mappings that reference separate provenance and rights records;
 - focused tests for a source-to-approved-derivative chain, invalid metadata, cycles, duplicate outputs, and defensive snapshots.
 
 Not implemented:
 
-- provenance persistence, signatures, tamper-evident storage, external evidence verification, identity proof, completeness proofs, rights/license evaluation, source-owner representation resolution, cache invalidation, claimant portal, royalty accounting, or ad measurement;
+- provenance persistence, signatures, tamper-evident storage, external evidence verification, identity proof, completeness proofs, rights/license evaluation, identity/authority verification, source-owner representation resolution, cache invalidation, claimant portal, royalty accounting, or ad measurement;
 - changes to the existing `creator-network.channel/1` wire contract;
 - automatic import of remote source URIs or remote graph traversal.
 
