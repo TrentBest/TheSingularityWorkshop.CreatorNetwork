@@ -3,6 +3,17 @@ using System.Collections.Generic;
 
 namespace CreatorNetwork.Contracts;
 
+/// <summary>How specifically the originator of the represented work is currently asserted.</summary>
+public enum ProvenanceOriginatorStatus
+{
+    /// <summary>An originator identity is asserted, but the assertion is not thereby verified.</summary>
+    Claimed = 0,
+    /// <summary>The originator is not currently identified.</summary>
+    Unknown = 1,
+    /// <summary>Originator identity or authority is actively disputed.</summary>
+    Disputed = 2
+}
+
 /// <summary>
 /// An append-only assertion describing how one digital artifact was created or modified.
 /// The record captures declared lineage; it is not independent proof of authorship or license.
@@ -20,12 +31,14 @@ public sealed class ProvenanceRecord
         IReadOnlyList<ProvenanceReference>? inputs = null,
         IReadOnlyList<string>? changes = null,
         string? toolName = null,
-        string? toolVersion = null)
+        string? toolVersion = null,
+        ProvenanceOriginatorStatus originatorStatus = ProvenanceOriginatorStatus.Unknown)
     {
         RecordId = recordId ?? string.Empty;
         OutputContentId = outputContentId ?? string.Empty;
         ActorId = actorId ?? string.Empty;
         OriginatorId = originatorId;
+        OriginatorStatus = originatorStatus;
         Operation = operation ?? string.Empty;
         OccurredAt = occurredAt;
         Inputs = Snapshot(inputs);
@@ -53,6 +66,8 @@ public sealed class ProvenanceRecord
     public string ActorId { get; }
     /// <summary>Optional asserted originator of the represented work; not a verified rights-holder identity.</summary>
     public string? OriginatorId { get; }
+    /// <summary>Whether originator identity is claimed, unknown, or disputed; this is not a verification result.</summary>
+    public ProvenanceOriginatorStatus OriginatorStatus { get; }
     /// <summary>Controlled or documented operation label, such as capture, scan, edit, composite, or conversion.</summary>
     public string Operation { get; }
     /// <summary>UTC timestamp at which the operation is asserted to have occurred.</summary>
