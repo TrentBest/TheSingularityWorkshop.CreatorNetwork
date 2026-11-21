@@ -24,6 +24,8 @@ public sealed class RightsAndRepresentationTests
 
         Assert.Empty(RightsDeclarationValidator.Validate(declaration));
         Assert.DoesNotContain(RightsAction.Transform, declaration.GrantedActions);
+        Assert.DoesNotContain(RightsAction.Cache, declaration.GrantedActions);
+        Assert.DoesNotContain(RightsAction.Replicate, declaration.GrantedActions);
         Assert.DoesNotContain(RightsAction.CommercialUse, declaration.GrantedActions);
     }
 
