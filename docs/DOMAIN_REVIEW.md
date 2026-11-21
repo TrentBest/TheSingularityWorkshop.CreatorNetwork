@@ -401,5 +401,33 @@ The following remain open: concrete identity/authentication and audience policy 
 No new protocol dependency, provider SDK, monetization implementation, public endpoint, or aggregator-specific contract is justified by this review alone.
 
 
+
+### 13.6 Domain decision: channel identity, publication revision, and resource attachment
+
+The existing `ChannelPublication` is a useful first-generation channel-manifest DTO, but its name and fields currently combine two different lifecycle concepts: it has a stable `PublicationId` and revision while its title/description/visibility are documented as channel metadata. Do not extend this shape indefinitely by adding unrelated fields.
+
+Adopt the following conceptual model for the next compatible contract revision:
+
+- **Channel** is the creator-owned, stable collection. It has its own portable `ChannelId`, creator/persona reference, channel-level descriptive metadata, and channel policy. It can exist before it contains any published work.
+- **Publication** is one creator-authorized release within a channel. It has a stable `PublicationId` within the creator's portable namespace, a monotonically increasing revision, publication-time metadata/policy snapshot, and an immutable reference to its primary authored work. Editing the channel description must not silently rewrite a publication revision; updating a published work creates a new publication revision.
+- **Experience artifact** is one possible primary work. CreatorNetwork references the finalized Experience artifact using the existing Experiences/MicroBundleRepository address contract once the end-to-end artifact provider path is available. CreatorNetwork must not copy MicroBundle artifact bytes, redefine MicroBundle identity, or treat an Experience as a MicroBundle merely because its manifest resolves to MicroBundles.
+- **Typed resource reference** identifies non-executable supporting content (for example image, mesh, document, dataset, or recorded media) independently from executable MicroBundle artifacts. A publication may carry an ordered set of such references and their declared roles (for example thumbnail, attachment, scene resource, or transcript). A resource reference is not a byte store, delivery API, permission grant, or claim that the destination can interpret it.
+- **Live session** remains a separate time-bound resource/lifecycle and is not a publication revision or durable asset.
+
+**Attachment boundary:** until Experiences defines a portable non-executable resource family in its own manifest contract, CreatorNetwork's publication envelope is the narrowest current place to reference publication-level supporting resources. Do not inject resource fields into `FSM_COS.RuntimeManifest`, model them as MicroBundles, or invent a second storage/repository contract. If Experiences later owns required in-Experience resource dependencies, CreatorNetwork should reference that finalized Experience contract and avoid duplicating the same dependency list; publication-level resources should remain only for resources intentionally attached by the publisher outside the Experience's own composition.
+
+**Compatibility/disposition:** retain `ChannelPublication` and its current `creator-network.channel/1` schema as the existing provisional v1 wire contract. Do not silently reinterpret its fields or change its serialized shape. A future schema should separate `Channel` from `Publication`, make the primary work reference explicit and typed, and add a typed resource-reference collection only after the resource identity/delivery boundary has been validated. Provide an explicit v1-to-new-schema migration/reader policy; never rewrite existing IDs or revision history during migration.
+
+**Required acceptance proof before implementing the new contract:**
+
+1. A channel can be created and remain empty; multiple publications can belong to the same channel.
+2. A publication revision is immutable as a snapshot; a later revision does not mutate prior exports or cached representations.
+3. The primary Experience artifact address is preserved across two independent providers without copying MicroBundleRepository storage semantics into CreatorNetwork.
+4. Typed non-executable resources remain distinguishable from executable artifacts and media delivery remains provider-owned.
+5. A consumer that lacks a required format/capability receives an explicit incompatibility result; optional resources may be omitted only under an explicit publication/consumer policy.
+6. Channel metadata edits, publication revision changes, creator identity projection, resource authorization, and origin/destination import authorization are tested as separate concerns.
+
+This is a domain decision for the next contract design, not an implementation or production-readiness claim. The current v1 DTO remains unchanged pending the focused vertical slice and compatibility tests.
+
 <!-- THE SINGULARITY WORKSHOP FOOTER -->
 <p align="center"><img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/Avatar.jpg" alt="The Singularity Workshop avatar" width="180" /></p>
