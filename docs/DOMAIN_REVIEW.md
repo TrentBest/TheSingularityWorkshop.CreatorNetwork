@@ -429,5 +429,69 @@ Adopt the following conceptual model for the next compatible contract revision:
 
 This is a domain decision for the next contract design, not an implementation or production-readiness claim. The current v1 DTO remains unchanged pending the focused vertical slice and compatibility tests.
 
+
+### 13.7 Domain decision: permissions, consent, sharing, and device access
+
+The maintainer's 2026-11-21 direction is that CreatorNetwork must treat permissions and sharing as a first-class part of the creator ecosystem. This does **not** mean that CreatorNetwork should absorb every security, identity, privacy, or device API. The correct design is a set of explicit authority boundaries with reusable contracts where the Workshop has a genuine shared need.
+
+#### What the source review establishes
+
+- **Profiles already exists and should be reused for identity and disclosure.** Its development source models profile claims, observer-specific representations, groups, relationships, exclusions, private identity links, access-record contracts, and opt-in data licensing. Its own architecture explicitly says groups influence disclosure but do not grant interaction permissions; the host must enforce authorization. A ProfileRepresentation is a permitted projection, not endpoint or storage security.
+- **FSM_UserIO already exists and should be reused for semantic capability/interaction.** Its development source models source-neutral capabilities, observations, expressions, intent, and feedback. Its theory explicitly distinguishes capability from authority: having a microphone, camera, sensor, or software tool does not authorize its use. The package does not acquire device data, prompt for OS permission, manage capture sessions, or execute actions.
+- **CreatorNetwork already has a host authorization seam.** `ICreatorNetworkAccessPolicy` gates publication read/write and asset read/write operations. The loopback implementation is development-only. This is an enforcement hook, not a reusable policy vocabulary, grant store, consent ledger, or production identity provider.
+- **SingularityWarehouse contains security concepts and application-specific policy code, but the reviewed implementation is not yet a proven provider-neutral security package.** Reuse its ideas only where a concrete contract and tests demonstrate fit; do not make CreatorNetwork depend on a warehouse application or copy its implementation wholesale.
+- **No dedicated Workshop-wide authorization/permissions package was found in the currently indexed Workshop repository set.** Therefore do not pretend Profiles or UserIO already solves authorization, and do not create a speculative package merely to give the concern a home.
+
+#### Separate the decisions that are often called "permission"
+
+| Concern | Authority | Meaning |
+|---|---|---|
+| Identity and authentication | Trusted host / identity provider, optionally using Profiles identity links | Establish who is acting; a profile ID or display name is not proof |
+| Profile disclosure | Profiles | Which profile claims/representation an observer may receive |
+| Publication and resource sharing | CreatorNetwork domain policy, enforced by trusted host/provider | Who may discover, read, stream, download, import, embed, remix, redistribute, modify, or administer a creator-owned item |
+| Processing consent | The party collecting/processing data, under host and applicable legal policy | Whether a person agreed to a stated purpose, scope, recipient, duration, and handling |
+| Device/source permission | OS/platform permission system through a host-owned source adapter | Whether this application/session may acquire a specific source such as microphone, camera, screen, location, or another sensor |
+| Semantic capability and interaction | FSM_UserIO | What a form can sense/express/do and what observation or intent was produced; not whether the host should permit it |
+| Execution authorization | Trusted host/security enforcement boundary | Whether this particular operation is permitted now, for this subject, resource, context, and policy version |
+
+#### CreatorNetwork's responsibility
+
+CreatorNetwork should own the **creator-facing sharing semantics** attached to channels, publications, live sessions, and typed resources. A future portable policy contract must be able to express, without prescribing a specific identity provider:
+
+- audience scope (public, unlisted-by-reference, named/group audience, owner-only, or provider-defined audience);
+- distinct actions (discover, read metadata, stream, download, import, embed, remix, redistribute, edit, moderate, administer);
+- policy scope and inheritance (channel defaults, publication snapshot, resource-specific restriction);
+- explicit grant/deny, expiry, revocation, and policy version;
+- whether onward sharing is allowed and whether attribution or other declared terms must accompany reuse;
+- required capability or compatibility constraints, without confusing technical capability with permission.
+
+Discoverability is not readability; readability is not download permission; download permission is not redistribution permission; and access to an Experience does not automatically grant access to every referenced resource. Channel defaults must not silently widen a publication/resource's explicit restriction. The host/provider evaluates and enforces the policy at every serving boundary, including metadata, byte/range delivery, caches, exports, and imports.
+
+The portable contract should describe the creator's declared sharing policy and stable policy/grant references. It must not claim that a remote provider has enforced a policy merely because the declaration was serialized. A destination independently authorizes import and future serving; a reachable URI is never a grant.
+
+#### Consent and device access are a different lifecycle
+
+Microphone, camera, screen capture, location, Bluetooth, files, and other sensors are **source-acquisition permissions**, not publication visibility flags. The flow should be:
+
+1. A host/Experience declares the specific source and purpose it needs.
+2. The user is told what will be captured, why, for which experience/recipient, and whether it is local, transmitted, or recorded.
+3. The platform/OS permission is requested by the host's source adapter at the point of use; a prior CreatorNetwork publication grant cannot bypass the OS prompt.
+4. Acquisition begins only after both platform permission and host policy allow it. Active capture is visibly indicated where the platform supports it, and the user can stop it.
+5. The adapter reports source status and finalized output through the appropriate UserIO/capture boundary. UserIO transports semantic interaction; it does not itself acquire the stream.
+6. Upload, publication, audience sharing, retention, and onward redistribution each receive their own authorization/consent decision. Permission to use a microphone is not permission to publish its recording.
+7. Revocation stops future acquisition or future authorized access where the enforcing system controls it. It cannot promise to erase copies already downloaded by others.
+
+Consent records, where required, should be purpose-bound and versioned: consenting subject, requesting actor/application, specific source/data, purpose, recipients, scope, terms version, time, expiry, and revocation state. Do not treat a generic "allow all" toggle or a one-time OS permission as perpetual consent to every later use.
+
+#### Candidate reusable security package — discovery before creation
+
+A separate provider-neutral security/authorization package may be warranted if at least two independent Workshop domains need the same subject/resource/action/context decision model and testable policy composition. Before creating it, inventory actual consumers and define the minimal shared contract. If justified, it should own generic authorization primitives and evaluation interfaces—not Profiles disclosure, CreatorNetwork sharing vocabulary, device-specific OS prompts, authentication credentials, persistence, HTTP middleware, or UI.
+
+The candidate should be evaluated against least privilege, explicit deny/unknown behavior, policy versioning, expiry/revocation, delegated authority, audit evidence, and deterministic fail-closed outcomes. Avoid a universal "permission manager" singleton or a giant cross-platform device API. FSM_API may supply lifecycle mechanics only where needed; it must not acquire security policy responsibilities.
+
+**Disposition:** reuse Profiles for identity/disclosure, FSM_UserIO for semantic capability/interaction, and the existing CreatorNetwork host enforcement seam. Treat CreatorNetwork sharing policy as a first-class domain requirement. Treat device permission/capture as a host-owned adapter lifecycle. Do not add a new package dependency or change the v1 wire contract until a cross-domain authorization contract and independent consumer tests justify it.
+
+**Acceptance proof before implementation:** tests must distinguish authentication from authorization; public discovery from metadata/byte access; stream from download and redistribution; creator grants from OS device grants; device permission from consent to transmit/publish; policy inheritance and explicit restriction; expired/revoked grants; denied/unknown decisions; cache/range/export/import enforcement; and revocation limits for already-exported copies. A test host must demonstrate microphone/camera/screen denial and revocation without any real device access being required in the portable contract tests.
+
 <!-- THE SINGULARITY WORKSHOP FOOTER -->
 <p align="center"><img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/Avatar.jpg" alt="The Singularity Workshop avatar" width="180" /></p>
