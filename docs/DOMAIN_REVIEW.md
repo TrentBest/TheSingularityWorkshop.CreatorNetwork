@@ -493,5 +493,96 @@ The candidate should be evaluated against least privilege, explicit deny/unknown
 
 **Acceptance proof before implementation:** tests must distinguish authentication from authorization; public discovery from metadata/byte access; stream from download and redistribution; creator grants from OS device grants; device permission from consent to transmit/publish; policy inheritance and explicit restriction; expired/revoked grants; denied/unknown decisions; cache/range/export/import enforcement; and revocation limits for already-exported copies. A test host must demonstrate microphone/camera/screen denial and revocation without any real device access being required in the portable contract tests.
 
+
+### 13.8 Domain decision: external rights-holder portal, disputes, and package takedown
+
+The maintainer's 2026-11-21 direction establishes a strong ecosystem rule: creators may publish only material they are authorized to contribute, while external rights-holders must have a clear, usable path to identify allegedly unauthorized material and request enforcement. The Workshop is not expected to proactively discover every infringement. It is expected to respond responsibly when a sufficiently substantiated rights claim is received.
+
+This is a first-class **Rights & Disputes** workflow within CreatorNetwork's trust plane. It is related to sharing policy but is not the same thing as an ordinary permission grant.
+
+#### Rights-holder portal
+
+Provide an external-facing portal that does not require the claimant to be a CreatorNetwork member or to create a creator profile merely to submit a claim. The portal should support:
+
+- claimant identity and contact details, and the capacity in which they act (owner, authorized representative, agent);
+- identification of the copyrighted/protected work and the basis for ownership or authority to act;
+- precise identification of each challenged item: channel, publication ID/revision, immutable package/artifact identity, resource IDs, and accessible locations;
+- explanation of the allegedly infringing material and how it relates to the claimant's work;
+- requested disposition (remove, restrict, disable specified use, negotiate a license/royalty, or other resolution);
+- good-faith and accuracy attestations, required legal declarations where applicable, and secure evidence attachments;
+- a private case reference, status history, evidence trail, and a way to supplement or withdraw the claim.
+
+Do not make public disclosure of claimant contact information or sensitive evidence the default. Preserve the submitted evidence and decision history with access controls and retention rules. The portal must guard against abusive, fraudulent, duplicate, and deliberately overbroad claims.
+
+#### Notice, creator response, and decision lifecycle
+
+A claim is not automatically proof. Establish a documented review threshold that validates claimant authority, identifies the exact material, checks the asserted rights and scope, and distinguishes a genuine rights dispute from a disagreement, criticism, trademark issue, privacy complaint, or unrelated policy report.
+
+The workflow should support explicit states such as:
+
+1. **Submitted** — claim received; receipt and case ID returned.
+2. **Validation** — identity/authority, work, challenged material, completeness, and scope are checked.
+3. **Notice issued** — a sufficiently substantiated claim is sent to the responsible creator, including the challenged artifact/revision, claim summary, evidence or safe evidence summary, response deadline, and available response paths.
+4. **Restricted / quarantined** — where the claim meets the defined interim-action threshold, prevent new discovery, publication, delivery, download, and cache fills for the challenged material while preserving case evidence. Scope the restriction to the implicated items rather than indiscriminately disabling unrelated creator work.
+5. **Creator response** — the creator may remove or replace the material, provide authorization/license evidence, explain an exception or mistake, contact the claimant to negotiate permission/royalties, or contest the claim with supporting evidence.
+6. **Decision** — an authorized reviewer records findings, reasons, scope, and the applicable policy/legal basis. A claim is not resolved merely because a deadline passed.
+7. **Removal / restoration / licensed resolution** — execute and record the selected outcome, including any appeal or review path.
+8. **Closed / retained** — preserve the minimum necessary audit record and evidence according to a defined retention schedule.
+
+The creator notice may state a firm deadline: unless the creator submits a response by the stated date, the identified package/publication and controlled copies will be removed or made unavailable. The system must actually enforce that consequence at the deadline; it must not imply that silence proves infringement. The final decision and notice language must be reviewed for applicable law and jurisdiction before production.
+
+#### Takedown scope includes controlled caches and derivatives
+
+A removal decision must resolve the complete Workshop-controlled distribution graph, not just hide a channel listing. It should identify and act on:
+
+- the exact publication revision and immutable primary artifact/package;
+- attached typed resources and separately hosted media implicated by the claim;
+- provider-origin bytes and all Workshop-controlled replicas, mirrors, CDN objects, cache entries, thumbnails, previews, range caches, and generated derivatives;
+- indexes, discovery records, download endpoints, and future import/replication paths;
+- known derived or adapted packages where the evidence and decision cover those derivatives.
+
+Use immutable artifact/resource identities and provenance links so the system can find all controlled copies. Cache invalidation must be verifiable, retryable, and auditable; a successful database status update is not proof that bytes have stopped being served. A destination provider must enforce its own import and serving policy. Do not promise deletion of copies already downloaded, exported, independently mirrored, or held by third parties outside Workshop control; record known limitations and send downstream notices where supported.
+
+Preserve the challenged material only where necessary for evidence, dispute handling, legal hold, or audit, under restricted access. Evidence retention must not become a backdoor for continued public or creator access.
+
+#### Creator response is also a business opportunity
+
+The portal should not assume every dispute must end in permanent removal. It should support a rights-holder choosing to offer a license, request attribution, set permitted uses, negotiate royalties, or authorize a specific adaptation/use. If both parties reach a valid agreement, capture the grant as a scoped, versioned rights authorization tied to the exact work, creator, package/resource, permitted actions, territory/audience where relevant, term, compensation/royalty terms, attribution, and onward-use rights. A negotiated license is not inferred from silence or from a creator's willingness to pay; it requires explicit authorization by someone entitled to grant it.
+
+This creates a path for legitimate fan creativity, virtual galleries, music, visual art, character performance, adaptation, and conversion into reusable Experience/MicroBundle content—without treating the existence of an upload or a transformative workflow as permission. A rights-holder may choose broad access or a commercial partnership; CreatorNetwork should make that choice express, granular, and enforceable.
+
+#### Required fairness and safety controls
+
+- Distinguish copyright from trademark, publicity/personality, privacy, contract, and other rights; route them to the appropriate policy rather than applying one generic copyright form.
+- Support counter-notices, appeals, claimant withdrawal, creator evidence, duplicate claims, conflicting claimants, and restoration review.
+- Protect against malicious takedown campaigns and impersonation; verify claimant authority proportionately and keep a tamper-evident case/audit history.
+- Apply consistent deadlines and explain extensions, interim restrictions, decisions, and appeal outcomes to both parties.
+- Keep reviewer authority separate from automated triage. Automation may classify, correlate artifact copies, and enforce a recorded decision; it must not fabricate proof of ownership or silently make contested legal findings.
+- Establish repeat-abuse and repeat-infringer handling only through a published, reviewable policy with appropriate safeguards and appeal.
+- Minimize personal data, restrict evidence access, and define retention/deletion rules.
+- Design for applicable notice-and-counter-notice regimes, designated-agent obligations where applicable, and jurisdiction-specific requirements. This domain model is not legal advice and does not itself establish statutory compliance; production forms, deadlines, safe-harbor posture, and reviewer procedures require qualified legal review.
+
+#### Ownership and integration boundaries
+
+CreatorNetwork owns the portable rights-claim, notice, response, decision, license-reference, and takedown-case lifecycle for CreatorNetwork publications and resources. The trusted host/provider owns authentication of portal participants, evidence storage, reviewer authorization, and enforcement at each storage/delivery/cache boundary. MicroBundleRepository remains the artifact storage/retrieval authority; Experiences remains the Experience manifest/composition authority. CreatorNetwork must reference artifact provenance and coordinate removal, not copy repository bytes or invent a second artifact store.
+
+Do not create a new general-purpose legal platform or security package as a prerequisite. First prove the rights workflow against the existing CreatorNetwork publication/resource model and host enforcement seam. If later multiple domains require the same case-management primitives, extract only demonstrated shared contracts.
+
+**Acceptance proof before implementation:**
+
+1. An external rights-holder can submit a claim without becoming a creator/member; incomplete or unverifiable claims are not treated as proven.
+2. A claimant must identify the work, authority, and exact challenged artifacts/resources; broad claims can be narrowed and reviewed.
+3. The creator receives a traceable notice with a specific response deadline and can submit a license, removal confirmation, explanation, or counter-evidence.
+4. No-response deadlines trigger the explicitly stated and authorized disposition, with a recorded decision; silence alone is not represented as proof.
+5. A valid removal decision blocks new discovery, fetch, download, import, and cache fill, and invalidates every known Workshop-controlled copy/derivative in the artifact graph.
+6. Cache/replica invalidation is independently verified, retryable, and auditable; retained evidence is inaccessible to ordinary users.
+7. A creator can contest, appeal, and obtain a reasoned decision; abusive or fraudulent claims are detectable and reviewable.
+8. A rights-holder can explicitly grant a scoped license/royalty arrangement, and the resulting rights do not exceed the grant.
+9. Already-exported third-party copies are explicitly outside guaranteed deletion; downstream notification is best-effort and recorded.
+10. The process distinguishes a rights claim from device consent, profile disclosure, ordinary sharing policy, and generic moderation.
+
+This is a domain decision and design gate, not a claim that a portal, legal process, cache purge, or production takedown capability already exists. No endpoint, schema, public portal, legal deadline, or enforcement automation should be implemented until the case lifecycle, authority model, evidence requirements, and independent acceptance tests are reviewed.
+
+
 <!-- THE SINGULARITY WORKSHOP FOOTER -->
 <p align="center"><img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/Avatar.jpg" alt="The Singularity Workshop avatar" width="180" /></p>
