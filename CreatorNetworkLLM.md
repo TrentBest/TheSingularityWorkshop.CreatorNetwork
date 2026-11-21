@@ -18,6 +18,8 @@ Before feature expansion, review [Issue #7](https://github.com/TrentBest/TheSing
 
 The missing upstream domain is the Experiences-owned authored-to-finalized runtime-composition workflow: validate editability with available platform tooling or a supplied editor/super-Experience, reject unsupported content, deterministically capture/version the runtime composition, and exclude development-only editor tooling. CreatorNetwork's intended product boundary is broader than recorded media: it is the portable distribution/publication/trust plane for authored MicroBundles, Experiences, and typed resources. The current channel/media API is only a proving slice, not the canonical general artifact model. Do not confuse authoring with CreatorNetwork publication contracts or FSM_COS runtime manifests.
 
+Before making provenance, derivative, rights-aware representation, creator-venue, revenue-lineage, or advertising decisions, read the [Creator ecosystem model](docs/CREATOR_ECOSYSTEM_MODEL.md). It captures the maintainer's 2026-11-21 direction and distinguishes CreatorNetwork contracts from the Workshop domains that author, simulate, render, execute, and account for those experiences. Treat its future concepts as design intent, not implemented capabilities.
+
 ## Ownership boundaries
 
 - **CreatorNetwork:** portable distribution/publication and trust contracts for creator-authored MicroBundles, Experiences, and typed resources: stable references, version/revision semantics, provenance/rights declarations, integrity references, discovery-facing metadata, and provider portability. Current channel/media DTOs are provisional, not proof that this general contract is complete.
