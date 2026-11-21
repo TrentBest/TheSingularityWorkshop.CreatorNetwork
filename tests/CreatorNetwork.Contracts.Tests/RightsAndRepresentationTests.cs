@@ -74,6 +74,40 @@ public sealed class RightsAndRepresentationTests
     }
 
     [Fact]
+    public void MuseumAlternativeRetainsItsOwnProvenanceAndRightsScope()
+    {
+        var sourceProvenance = new ProvenanceRecord(
+            "provenance:scan", "content:original", "publisher:museum", "publisher:museum",
+            "capture", DateTimeOffset.UtcNow,
+            new[] { new ProvenanceReference(ProvenanceReferenceKind.RealWorldReferent, "object:statue") },
+            originatorStatus: ProvenanceOriginatorStatus.Claimed);
+        var alternativeProvenance = new ProvenanceRecord(
+            "provenance:approved-low-poly", "content:low-poly", "publisher:museum", "publisher:museum",
+            "authorized-representation", DateTimeOffset.UtcNow,
+            new[] { new ProvenanceReference(ProvenanceReferenceKind.ContentArtifact, "content:original") },
+            new[] { "Reduced complexity using the publisher-approved workflow." },
+            originatorStatus: ProvenanceOriginatorStatus.Claimed);
+        var originalRights = new RightsDeclaration(
+            "rights:original", "content:original", "rights-holder:museum",
+            new[] { RightsAction.Display });
+        var alternativeRights = new RightsDeclaration(
+            "rights:low-poly", "content:low-poly", "rights-holder:museum",
+            new[] { RightsAction.Display, RightsAction.Embed });
+        var offer = new RepresentationOffer(
+            "offer:statue", "publisher:museum", "work:statue",
+            "content:original", "content:low-poly", "gallery.centerpiece",
+            "provenance:approved-low-poly", "rights:low-poly");
+
+        Assert.Empty(ProvenanceGraphValidator.Validate(new[] { sourceProvenance, alternativeProvenance }));
+        Assert.Empty(RightsDeclarationValidator.Validate(originalRights));
+        Assert.Empty(RightsDeclarationValidator.Validate(alternativeRights));
+        Assert.Empty(RepresentationOfferValidator.Validate(offer));
+        Assert.DoesNotContain(RightsAction.Embed, originalRights.GrantedActions);
+        Assert.Contains(RightsAction.Embed, alternativeRights.GrantedActions);
+        Assert.DoesNotContain(RightsAction.Transform, alternativeRights.GrantedActions);
+    }
+
+    [Fact]
     public void RightsActionsAreSnapshotted()
     {
         var actions = new List<RightsAction> { RightsAction.Display };
