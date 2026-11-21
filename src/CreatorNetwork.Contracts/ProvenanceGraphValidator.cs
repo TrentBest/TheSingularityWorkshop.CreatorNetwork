@@ -39,8 +39,10 @@ public static class ProvenanceGraphValidator
 
             if (string.IsNullOrWhiteSpace(record.OutputContentId))
                 Add(ref errors, "provenance.output.required", field + ".outputContentId", "Identify the exact output content artifact.");
-            else if (!outputOwners.TryAdd(record.OutputContentId, i))
+            else if (outputOwners.ContainsKey(record.OutputContentId))
                 Add(ref errors, "provenance.output.duplicate", field + ".outputContentId", "Each output content artifact must have one creating record in this graph snapshot.");
+            else
+                outputOwners.Add(record.OutputContentId, i);
 
             if (string.IsNullOrWhiteSpace(record.ActorId))
                 Add(ref errors, "provenance.actor.required", field + ".actorId", "Identify the actor who performed the operation.");
