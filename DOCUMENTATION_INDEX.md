@@ -6,12 +6,13 @@ Use this index to find the right level of explanation. The README introduces the
 
 ## Start here
 
-| Repository guidance | [CreatorNetwork LLM contract](CreatorNetworkLLM.md) · [Domain and trust review](docs/DOMAIN_REVIEW.md) |
+| Repository guidance | [CreatorNetwork LLM contract](CreatorNetworkLLM.md) · [Domain and trust review](docs/DOMAIN_REVIEW.md) · [Creator ecosystem model](docs/CREATOR_ECOSYSTEM_MODEL.md) |
 
 | If you want to… | Read |
 |---|---|
 | Understand the problem CreatorNetwork solves | [Theory learning path](docs/theory/README.md) · [Theory overview](docs/THEORY.md) |
 | See who owns each responsibility | [Architecture](docs/ARCHITECTURE.md) |
+| Understand provenance, source-work identity, museum reuse, approved representations, creator venues, royalties, and exploratory advertising | [Creator ecosystem model](docs/CREATOR_ECOSYSTEM_MODEL.md) |
 | Integrate profile identity and disclosure safely | [Profiles Integration](docs/PROFILES_INTEGRATION.md) |
 | Upload and retrieve a local recorded-media asset | [Local Media Assets](docs/MEDIA_ASSETS.md) |
 | Understand creator authoring, capture, recorded media, and live streaming boundaries | [Creator Studio, Capture, and Streaming](docs/CREATOR_STUDIO_AND_STREAMING.md) |
