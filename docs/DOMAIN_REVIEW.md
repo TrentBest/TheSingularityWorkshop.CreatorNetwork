@@ -323,5 +323,70 @@ Consumer receives only the permitted creator projection
 
 ---
 
+## 13. Current implementation and cross-platform product review (2026-11-21)
+
+This addendum supersedes only the affected implementation-status statements in the historical 2026-10-29 audit above. The earlier section remains as a dated record of what was observed at that time.
+
+### 13.1 Verified implementation changes since the original audit
+
+Current source on `development` now includes:
+
+- **Host authorization seam:** `ICreatorNetworkAccessPolicy` is invoked for publication reads/writes and asset reads/writes. The test host includes a deny-all policy test covering all four operations. Unauthorized reads return 404; unauthorized writes return 403. The default `LoopbackDevelopmentAccessPolicy` only permits loopback requests and does not authenticate a person or establish private-audience authorization.
+- **Publication concurrency controls:** the local store rejects non-increasing revisions. The HTTP PUT requires either create-only `If-None-Match: *` or a strong `If-Match` ETag. Missing preconditions return 428, stale ETags return 412, malformed/conflicting preconditions return 400, and stale/equal revisions return 409. Tests cover the conditional-write path and local-store revision ordering/concurrency.
+- **Remaining scope of those controls:** the policy is an injectable host seam, not a production identity provider or audience implementation. Revision history is not an append-only event log. Store synchronization and cache coherence remain process-local; the file provider is not a distributed multi-writer store. The local Node remains loopback-only.
+- **CI evidence:** issue comments record successful historical CI runs, most recently run 41120420552 for commit 8203197. The current `development` head is `ba650616e8de9baa6dd3a46e2f68d72a1b404f4b` and the workflow now targets .NET 10. No CI run for this exact head was verified during this review session. Do not treat historical CI evidence as validation of the current head.
+
+Accordingly, replace the original audit's first two blocking findings with the narrower current statements above. The crash-recovery, multi-process coordination/cache, quotas/rate limits, post-ingest integrity, and production host authentication/audience gaps remain open until separately verified and tested.
+
+### 13.2 Cross-platform creation is a product invariant
+
+The maintainer's 2026-11-21 requirement expands the product goal beyond cross-platform *distribution*. CreatorNetwork must make it possible for creators to combine tools, devices, media, services, MicroBundles, Experiences, data, simulations, and interactive environments to originate new forms of expression—not merely export conventional video, audio, or social posts to several destinations.
+
+This is a CreatorNetwork ecosystem invariant, not a mandate to implement every authoring tool inside this repository:
+
+1. **Cross-platform compatibility:** a publication and its referenced artifacts must be independently resolvable by compatible clients and providers without depending on one vendor's client, runtime, hosting account, or aggregator.
+2. **Cross-platform composition:** authored work may combine multiple media and executable/non-executable capabilities. The authored Experience and its deterministic finalization belong to Experiences; MicroBundle meaning belongs to MicroBundleDomain; artifact retrieval belongs to MicroBundleRepository/provider contracts; runtime composition belongs to FSM_COS; host workflow/lifecycle belongs to Foundry. CreatorNetwork publishes portable references, versioned metadata, provenance/rights declarations, and distribution policy without duplicating those domains.
+3. **Creator independence:** creators must be able to export and migrate their publications and referenced assets, choose or change hosting providers, and maintain portable creator references. Discovery and aggregation are replaceable services, not the canonical registry or gatekeeper for content or audience relationships.
+4. **Capability honesty:** portability does not mean every client can execute every Experience. A consumer must declare supported formats/capabilities and fail with actionable incompatibility information rather than silently flattening, dropping, or misrepresenting unsupported content.
+5. **Audience and rights continuity:** migration or federation must not turn a reachable URI into permission to copy, disclose, or execute. Origin authorization, destination import authorization, rights/provenance review, and audience policy remain explicit at each trust boundary.
+
+A future aggregator is one optional consumer/discovery client. It must not become the required authoring surface, exclusive host, canonical identity authority, or owner of creator-audience relationships. Discovery ranking must remain separable from paid promotion; any monetization policy must be transparent, opt-in, auditable, and provider-scoped.
+
+### 13.3 Current gap assessment against the expanded goal
+
+| Capability | Current evidence | Status |
+|---|---|---|
+| Provider-neutral channel/publication metadata | `ChannelPublication`, `ContentReference`, and `PublicationValidator` exist | **Partial / provisional** — channel and media-shaped fields are not yet a general typed artifact/Experience publication model |
+| Host policy enforcement seam | `ICreatorNetworkAccessPolicy` covers four local Node operations | **Partial** — trusted host must supply real authentication, audience policy, and enforcement |
+| Revision conflict protection | local monotonic revision check plus HTTP conditional ETags and tests | **Implemented for local prototype** — not distributed history or cross-process compare-and-swap |
+| Finalized Experience and MicroBundle publication | repository contracts exist upstream; CreatorNetwork does not yet provide a verified end-to-end composition publication path | **Blocked on integration proof** — do not clone upstream artifact storage contracts |
+| Multi-medium/interactive authoring | Experiences and MicroBundle domains own authoring/composition concerns; no end-to-end CreatorNetwork proof is present | **Not demonstrated** |
+| Independent consumer and capability negotiation | no independent host/consumer proof in this repository | **Not demonstrated** |
+| Export/import with complete resource inventory | not present as a tested end-to-end workflow | **Not demonstrated** |
+| Discovery and fair ranking | discovery is a future replaceable provider boundary, not a verified implementation | **Not implemented** |
+| Rights, license evidence, dispute/takedown | declarations and risks are documented; no complete legal/policy workflow is implemented | **Unresolved / production blocker** |
+
+### 13.4 Revised proof target
+
+The first domain-approved proof should be a small, independently consumable Experience publication—not another channel endpoint:
+
+- author and deterministically finalize a minimal Experience through the Experiences-owned workflow;
+- reference at least two distinct MicroBundle capabilities and one non-executable typed resource, with pinned versions and verified digests;
+- publish a provider-neutral CreatorNetwork record that references those existing artifact/resource contracts rather than copying their byte models;
+- resolve it from a separate host that declares its supported capabilities, verifies all retrieved bytes, and uses FSM_COS only for the runtime composition it is authorized to assemble;
+- enforce publication and resource access through a trusted host policy fixture, with negative tests for unauthorized metadata and byte reads;
+- export/import the publication and full artifact/resource inventory between two providers, preserving stable publication identity while independently checking destination authorization and every digest;
+- show an explicit incompatibility result when the consumer lacks a required capability; never silently discard required content;
+- document revocation, already-downloaded copies, rights disputes, and discovery-provider independence without claiming universal deletion or universal interoperability.
+
+This is a target, not a claim that the upstream Experiences finalization seam or the complete two-provider local path is currently available. The existing MicroBundleRepository local-mode gaps recorded in its issues #22 and #25 remain external dependencies to verify before claiming the two-provider proof.
+
+### 13.5 Decisions still required before production
+
+The following remain open: concrete identity/authentication and audience policy for trusted hosts; rights declaration/evidence and legal review; origin-fetch and SSRF policy for migration; storage/cache semantics across executable artifacts and mutable resources; editor/runtime finalization guarantees in Experiences; local provider availability for Experience and MicroBundle artifacts; federation and takedown responsibilities; and the discovery/ranking policy that prevents paid placement from becoming the default gatekeeper.
+
+No new protocol dependency, provider SDK, monetization implementation, public endpoint, or aggregator-specific contract is justified by this review alone.
+
+
 <!-- THE SINGULARITY WORKSHOP FOOTER -->
 <p align="center"><img src="https://raw.githubusercontent.com/TrentBest/FSM_API/master/Documentation/Branding/Avatar.jpg" alt="The Singularity Workshop avatar" width="180" /></p>
