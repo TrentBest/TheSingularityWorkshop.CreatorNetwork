@@ -43,6 +43,8 @@ jobs:
       - name: Restore and test Profiles integration
         # MSBuild resolves ProjectReference paths relative to the referencing project directory.
         run: dotnet test tests/CreatorNetwork.Profiles.Tests/CreatorNetwork.Profiles.Tests.csproj --configuration Release -p:ProfilesProjectPath=../../dependencies/TheSingularityWorkshop.Profiles/TheSingularityWorkshop.Profiles.csproj --logger "trx;LogFileName=profiles-tests.trx"
+      - name: Run museum representation consumer sample
+        run: dotnet run --project samples/CreatorNetwork.MuseumConsumer/CreatorNetwork.MuseumConsumer.csproj --configuration Release
       - name: Build benchmarks
         run: dotnet build benchmarks/CreatorNetwork.Benchmarks/CreatorNetwork.Benchmarks.csproj --configuration Release
       - name: Upload test results

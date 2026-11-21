@@ -137,7 +137,11 @@ The cross-reference overload of `RepresentationOfferValidator.Validate(offer, pr
 
 The validators are structural safety nets, not a trust engine. Do not publish or consume a restricted resource merely because its provenance graph or representation offer passes validation.
 
-## 10. Next acceptance proof
+## 10. Runnable contract demonstration
+
+The repository includes [a local museum representation consumer sample](../samples/CreatorNetwork.MuseumConsumer/README.md). Run it with `dotnet run --project samples/CreatorNetwork.MuseumConsumer/CreatorNetwork.MuseumConsumer.csproj --configuration Release`. It validates an in-memory source/alternate lineage, separate rights declarations, and the exact offer references, then demonstrates that a consumer can embed the approved alternative without fetching or transforming the restricted original. Its hard-coded host trust allow-list is illustrative only; it is not production identity verification or a network consumer.
+
+## 11. Next acceptance proof
 
 The first end-to-end museum proof should use two independent museum publishers and one consumer Experience:
 

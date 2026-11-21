@@ -16,7 +16,7 @@ Use this index to find the right level of explanation. The README introduces the
 | Integrate profile identity and disclosure safely | [Profiles Integration](docs/PROFILES_INTEGRATION.md) |
 | Upload and retrieve a local recorded-media asset | [Local Media Assets](docs/MEDIA_ASSETS.md) |
 | Understand creator authoring, capture, recorded media, and live streaming boundaries | [Creator Studio, Capture, and Streaming](docs/CREATOR_STUDIO_AND_STREAMING.md) |
-| Follow the intended end-to-end proof | [Getting Started](docs/GETTING_STARTED.md) |
+| Follow the intended end-to-end proof | [Getting Started](docs/GETTING_STARTED.md) · [Museum representation consumer sample](samples/CreatorNetwork.MuseumConsumer/README.md) |
 | Compare interoperability approaches | [Interoperability](docs/INTEROPERABILITY.md) |
 | Understand security, trust, and moderation limits | [Security and Trust](docs/SECURITY_AND_TRUST.md) |
 | Understand how performance is measured | [Performance](docs/PERFORMANCE.md) |
