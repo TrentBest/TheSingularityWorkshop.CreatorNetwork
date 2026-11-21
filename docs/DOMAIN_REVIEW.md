@@ -360,7 +360,9 @@ A future aggregator is one optional consumer/discovery client. It must not becom
 | Host policy enforcement seam | `ICreatorNetworkAccessPolicy` covers four local Node operations | **Partial** — trusted host must supply real authentication, audience policy, and enforcement |
 | Revision conflict protection | local monotonic revision check plus HTTP conditional ETags and tests | **Implemented for local prototype** — not distributed history or cross-process compare-and-swap |
 | Immutable MicroBundle storage and persistent cache | MicroBundleRepository has a filesystem provider and `CachingMicroBundleRepository`; its current CI passed on commit `ca70fbfddba50d4ab81409b9aa347cd549b7c47e` ([run](https://github.com/TrentBest/TheSingularityWorkshop.MicroBundleRepository/actions/runs/44876755535)) | **Available upstream for local development** — reuse its address/provider/cache contracts; verify current head and package/host compatibility before integration |
+| Experience semantic manifest and dependency resolution | Experiences provides a strict versioned `ExperienceManifest`, deterministic repository-local canonical JSON, and a pure resolver that selects semantic providers and computes dependency-first immutable MicroBundle artifact closure | **Contract/resolver implemented; authoring-to-finalization and host integration remain unproven** — resolver performs no I/O, code loading, or host selection; it does not itself capture/finalize an authored Experience |
 | Finalized Experience artifact publication/retrieval | MicroBundleRepository exposes Experience artifact/catalog contracts and REST routes, but its Local host mode registers only the MicroBundle provider; Experience routes return 503 without an Experience provider | **Partially available** — Azure adapter exists; local Experience provider and end-to-end consumer proof remain open under [issue #22](https://github.com/TrentBest/TheSingularityWorkshop.MicroBundleRepository/issues/22) |
+| Non-executable typed resource references | Current CreatorNetwork `ContentReference` is media-shaped; Experiences `ExperienceManifest` roots are MicroBundle artifact identities | **Model gap** — decide whether non-executable resources are attached to CreatorNetwork publications, Experiences manifests, or both, without misclassifying them as executable MicroBundles |
 | Multi-medium/interactive authoring | Experiences and MicroBundle domains own authoring/composition concerns; no end-to-end CreatorNetwork proof is present | **Not demonstrated** |
 | Independent consumer and capability negotiation | no independent host/consumer proof in this repository | **Not demonstrated** |
 | Export/import with complete resource inventory | not present as a tested end-to-end workflow | **Not demonstrated** |
@@ -371,8 +373,8 @@ A future aggregator is one optional consumer/discovery client. It must not becom
 
 The first domain-approved proof should be a small, independently consumable Experience publication—not another channel endpoint:
 
-- author and deterministically finalize a minimal Experience through the Experiences-owned workflow;
-- reference at least two distinct MicroBundle capabilities and one non-executable typed resource, with pinned versions and verified digests;
+- start from a valid Experiences `ExperienceManifest` and its pure dependency-closure resolver; separately prove the authored-to-finalized package path before claiming a creator-authoring workflow;
+- reference at least two distinct MicroBundle capabilities with pinned versions and verified digests, and model one non-executable typed resource through an explicitly selected resource-reference contract (the current ExperienceManifest does not yet define this resource family);
 - publish a provider-neutral CreatorNetwork record that references those existing artifact/resource contracts rather than copying their byte models;
 - resolve it from a separate host that declares its supported capabilities, verifies all retrieved bytes, and uses FSM_COS only for the runtime composition it is authorized to assemble;
 - enforce publication and resource access through a trusted host policy fixture, with negative tests for unauthorized metadata and byte reads;
@@ -381,6 +383,16 @@ The first domain-approved proof should be a small, independently consumable Expe
 - document revocation, already-downloaded copies, rights disputes, and discovery-provider independence without claiming universal deletion or universal interoperability.
 
 This is a target, not a claim that the upstream Experiences finalization seam or the complete two-provider local path is currently available. MicroBundleRepository's local MicroBundle provider and persistent read-through cache are present and passed its Build and Test workflow at commit `ca70fbfddba50d4ab81409b9aa347cd549b7c47e`; its current development head has advanced since that run, so re-check current-head CI before depending on it. The unresolved local Experience artifact/catalog provider and end-to-end consumer proof remain tracked under MicroBundleRepository issue #22. Issue #25 remains open administratively even though the filesystem provider, cache, and focused tests are present; do not describe that provider as wholly missing.
+
+### 13.5a Experiences contract and authoring boundary clarified
+
+Source inspection of Experiences `development` confirms that `ExperienceManifest` is a real, strict, versioned contract. It validates stable identity, pinned artifact identities (including SHA-256), semantic capability requirements, and deterministic repository-local JSON. `ExperienceManifestResolver` performs pure provider selection and dependency-closure resolution, rejects missing/ambiguous requirements and cycles, and returns dependency-first artifacts. It intentionally performs no I/O, executable loading, or host selection. These are valuable contracts to reuse; the earlier wording that implied no Experience manifest/resolution contract exists would be inaccurate.
+
+That contract is not the complete authoring/finalization pipeline. The separate StoryBuilder → Experiences → AnyApp handoff explicitly marks the complete captured-package → manifest → artifact verification → FSM_COS → host presentation path as unverified. StoryBuilder is one optional authoring domain for story-rich Experiences, not a mandatory creator tool or a dependency of CreatorNetwork.
+
+The checked-in `WorkshopShowcase/manifest.json` is a different source-definition shape from the generic `ExperienceManifest` JSON contract and currently has `experienceId: null` / `identityStatus: pending-numeric-reservation`. Experiences issue #19 remains open for numeric identity reservation and canonical immutable publication packaging. Do not treat this source manifest as a publishable immutable artifact or invent its numeric identity.
+
+The current generic `ExperienceManifest` artifact roots identify MicroBundle artifacts; they do not define a separate non-executable resource family. CreatorNetwork's current `ContentReference` is media-shaped. The vertical slice must settle a narrow typed-resource reference boundary without making images, meshes, documents, datasets, or other non-executable content masquerade as executable MicroBundles.
 
 ### 13.5 Decisions still required before production
 
