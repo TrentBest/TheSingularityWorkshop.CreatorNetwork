@@ -1,6 +1,6 @@
 ![The Singularity Workshop animated moniker](https://raw.githubusercontent.com/TrentBest/TheSingularityWorkshop.Visualize/development/docs/assets/moniker.svg)
 
-# CreatorNetwork — A creator-owned publishing network
+# CreatorNetwork — The Content Creator platform
 
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![Repository](https://img.shields.io/badge/GitHub-CreatorNetwork-181717?logo=github)](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork)
@@ -8,11 +8,13 @@
 [![Sith Policy](assets/sith-policy.svg)](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/workflows/sith-policy.yml)
 **Creators should own their identity, publications, and audience relationships. Viewers should choose how they discover and experience them. Hosting and discovery providers should be replaceable.**
 
-CreatorNetwork is the foundation for a creator-owned internet: not another destination that asks everyone to move into one platform, but interoperable contracts and reference implementations that let independent creators publish once and reach many clients without surrendering the relationship to a single platform.
+CreatorNetwork is The Singularity Workshop's creator-facing **Content Creator platform**: the environment through which creators bring together tools, devices, services, media, data, simulations, MicroBundles, and Experiences to originate and distribute work that does not have to fit a conventional social-media format. Its portable contracts and trust plane let that work move across compatible clients and providers without making one editor, runtime, hosting provider, discovery service, or aggregator the owner of the creator's work or audience relationships.
 
-The repository contains a provisional provider-neutral publication contract library, provenance and scoped-rights declarations, source-approved representation references, validation tests, a runnable museum-consumer contract demonstration, a loopback-only file-backed Creator Node prototype, a host-neutral .NET authoring client for recorded-media upload and explicit publication, named performance benchmarks, and a source-integrated Profiles publication adapter with focused tests. The adapter requires a trusted host resolver for publisher/persona selection and audience-specific disclosure. The current .NET 10 CI run passes the contract/authoring/node tests, Profiles integration tests, and benchmark build ([run](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/44961325214)); the manual BenchmarkDotNet execution was skipped. Independent publisher/consumer programs and the complete export/import path remain unproven; we distinguish working code from planned capabilities.
+CreatorNetwork coordinates with the Workshop's specialist domains rather than reimplementing them: StoryBuilder owns canonical story authoring; Experiences owns Experience composition and finalization; UserIO and host adapters own interaction and source acquisition; MicroBundleDomain owns capability meaning; MicroBundleRepository owns immutable artifact retrieval; FSM_COS owns runtime composition; and clients/hosts own presentation and execution policy. CreatorNetwork connects finalized outputs through channel/publication identity, provenance, rights and sharing declarations, portable references, discovery/addressing, and migration.
 
-**[Start with the concept](docs/THEORY.md) · [Understand the architecture](docs/ARCHITECTURE.md) · [First vertical slice](docs/GETTING_STARTED.md) · [Local media assets and authoring client](docs/MEDIA_ASSETS.md) · [Creator studio, capture, and streaming](docs/CREATOR_STUDIO_AND_STREAMING.md) · [Profiles integration](docs/PROFILES_INTEGRATION.md) · [Provenance and rights-aware representations](docs/PROVENANCE_AND_REPRESENTATIONS.md) · [Museum representation consumer sample](samples/CreatorNetwork.MuseumConsumer/README.md) · [Documentation index](DOCUMENTATION_INDEX.md)**
+**Current implementation:** the repository contains v1 channel contracts, additive v2 separated channel/publication snapshot contracts, provenance and scoped-rights declarations, source-approved representation references, validation tests, a runnable in-memory museum-consumer contract demonstration, a loopback-only file-backed Creator Node prototype, a host-neutral .NET authoring client for recorded-media upload and explicit publication, named performance benchmarks, and a source-integrated Profiles publication adapter with focused tests. The v2 contracts are not yet wired into the Node or a provider-backed publisher/consumer flow. The default Node policy is loopback-only and is not production authentication or private-audience enforcement. CI passed on [commit `c70f6c5`](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/commit/c70f6c566d5a3e23ae56917c4329ac7a4f7a16fe): [CreatorNetwork CI](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/45754538338) and [Sith Policy](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/45754538325). The manual BenchmarkDotNet execution was skipped. Independent provider-backed publisher/consumer applications, full export/import, and production trust enforcement remain unproven.
+
+**[Start with the concept](docs/THEORY.md) · [Understand the architecture](docs/ARCHITECTURE.md) · [Publication contracts](docs/PUBLICATION_CONTRACTS.md) · [First vertical slice](docs/GETTING_STARTED.md) · [Local media assets and authoring client](docs/MEDIA_ASSETS.md) · [Creator studio, capture, and streaming](docs/CREATOR_STUDIO_AND_STREAMING.md) · [Profiles integration](docs/PROFILES_INTEGRATION.md) · [Provenance and rights-aware representations](docs/PROVENANCE_AND_REPRESENTATIONS.md) · [Museum representation consumer sample](samples/CreatorNetwork.MuseumConsumer/README.md) · [Documentation index](DOCUMENTATION_INDEX.md)**
 
 ## 🟣 01 — Why CreatorNetwork?
 
@@ -35,7 +37,7 @@ This is infrastructure for platform choice, not a claim that protocols alone sol
 
 ## 🟦 02 — What is the system?
 
-At the center is a portable publication: creator identity reference, versioned metadata, and references to authored Experiences, MicroBundles, media, and other typed resources. The authoring and composition domains create the work; CreatorNetwork publishes and distributes portable references. Independent services may store, replicate, index, recommend, or deliver those publications. Clients declare their capabilities and decide how to present compatible work.
+At the center is a stable creator-owned channel containing immutable, versioned publication snapshots. A snapshot references a finalized Experience artifact and typed supporting resources without owning their bytes. The authoring and composition domains create the work; CreatorNetwork coordinates creator publication and distributes portable references. Independent services may store, replicate, index, recommend, or deliver those publications. Clients declare their capabilities and decide how to present compatible work.
 
 <p align="center"><img src="docs/assets/creator-network-overview.svg" alt="Creator-owned identity and publication manifests connect to replaceable hosting and independent discovery; multiple clients consume the same publications." width="100%"></p>
 
@@ -45,32 +47,36 @@ The publication contract is the portable center. Storage, discovery, delivery, a
 
 | Component | Responsibility |
 |---|---|
-| **CreatorNetwork** | Portable publishing contracts, provenance and rights declarations, source-approved representation references, creator-facing identity references, content references, discovery interfaces, and migration/export. |
-| [Profiles](https://github.com/TrentBest/TheSingularityWorkshop.Profiles) | Shared domain semantics for entities, claims, relationships, and observer-specific disclosure. CreatorNetwork wire contracts carry only the approved publication-safe projection; they do not replace or serialize a full Profile. |
-| [MicroBundleDomain](https://github.com/TrentBest/TheSingularityWorkshop.MicroBundleDomain) | Domain contracts for independently meaningful MicroBundles. CreatorNetwork may reference this model where it fits; it does not redefine it. |
+| **CreatorNetwork** | Creator-facing Content Creator platform; portable channels/publications, provenance and rights/sharing declarations, source-approved representation references, discovery/addressing, and migration. |
+| [StoryBuilder](https://github.com/TrentBest/StoryBuilder) | Canonical story records, narrative authoring, scenes, beats, timelines, and story provenance. |
+| [Experiences](https://github.com/TrentBest/TheSingularityWorkshop.Experiences) | Reusable Experience definitions, composition, validation, and finalization. |
+| [Profiles](https://github.com/TrentBest/TheSingularityWorkshop.Profiles) | Shared domain semantics for entities, claims, relationships, and observer-specific disclosure. CreatorNetwork carries only an approved publication-safe projection. |
+| [UserIO](https://github.com/TrentBest/FSM_UserIO) | Source-neutral semantic interaction; host-owned adapters acquire devices and handle OS permissions. |
+| [MicroBundleDomain](https://github.com/TrentBest/TheSingularityWorkshop.MicroBundleDomain) | Domain contracts for independently meaningful MicroBundles. CreatorNetwork references them through Experience artifacts; it does not redefine them. |
+| [MicroBundleRepository](https://github.com/TrentBest/TheSingularityWorkshop.MicroBundleRepository) | Immutable MicroBundle/Experience artifact storage and retrieval through replaceable providers. |
 | [FSM_COS](https://github.com/TrentBest/TheSingularityWorkshop.FSM_COS) | Resolves and assembles runtime capabilities for a host. It is not the creator registry, media host, or recommendation authority. |
-| Experiences and application hosts | Demonstrate and present publications; they consume CreatorNetwork contracts rather than own the network. |
-| Media/storage providers | Store, replicate, transcode, and deliver media through replaceable provider boundaries. Executable artifact storage and media delivery remain distinct concerns. |
+| Media/storage providers and application hosts | Store, replicate, deliver, render, and execute under their own provider and host policies. |
 
-**Core principle:** Profiles owns profile meaning and disclosure semantics; CreatorNetwork owns publication semantics; providers implement replaceable services; clients choose how to manifest the result.
+**Core principle:** CreatorNetwork is the Content Creator platform; its specialist Workshop domains remain authoritative for their own authoring, capture, artifact, composition, and presentation responsibilities.
 
-## 🟢 04 — See it in a minute
+## 🟢 04 — See the current proof
 
-The first proof is intentionally smaller than a social network:
+The current code proves important parts, not the complete platform:
 
-1. Create a stable creator identity.
-2. Publish a versioned channel manifest with metadata and content references.
-3. Serve the publication from the loopback-only local Creator Node prototype.
-4. Discover and render it from a separate client.
-5. Export the publication and move it to another host without changing creator identity.
-6. Consume the same publication from a separate Experience without hardcoding its content.
+1. Validate provider-neutral provenance, rights, and representation declarations.
+2. Model a stable channel separately from immutable publication revisions.
+3. Reference a finalized Experience artifact by identity, version, and digest.
+4. Reference non-executable supporting resources without pretending they are MicroBundles or media storage.
+5. Run an in-memory museum consumer that selects a source-approved representation for a requested action.
+6. Exercise the local v1 Creator Node and its host authorization/conditional-write seams.
 
-The contract models, validator, local Creator Node prototype, injectable host-authorization seam, conditional publication writes, and Profiles adapter are implemented. The default node policy is loopback-only and is not production authentication or private-audience enforcement. Current .NET 10 tests pass in [CI run](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/44961325214), including the Profiles integration suite; this validates the repository's test fixtures, not a production host. Independent publisher/consumer programs and end-to-end export/import remain to come; the six-step workflow is an acceptance target, not a claim that it already runs.
+The v2 contract models and tests pass in the [latest CI run](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/45754538338). The default Node remains loopback-only. A provider-backed independent publisher/consumer, two-provider export/import, and production identity/rights/sharing enforcement are the next proof—not claims about the current implementation.
 
 ## 🟪 05 — Build the open network
 
 - **Understand the why:** [Theory](docs/THEORY.md).
 - **Understand ownership and boundaries:** [Architecture](docs/ARCHITECTURE.md).
+- **Understand v1/v2 channel and publication contracts:** [Publication Contracts](docs/PUBLICATION_CONTRACTS.md).
 - **Understand source lineage, museum-approved representations, and rights boundaries:** [Provenance and rights-aware representations](docs/PROVENANCE_AND_REPRESENTATIONS.md).
 - **Follow the first proving path:** [Getting Started](docs/GETTING_STARTED.md).
 - **Integrate profile identity and disclosure safely:** [Profiles Integration](docs/PROFILES_INTEGRATION.md).

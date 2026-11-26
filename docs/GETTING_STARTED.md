@@ -2,19 +2,19 @@
 
 # Getting Started: the first vertical slice
 
-The first milestone is intended to prove creator portability end to end. The current runnable slice below demonstrates local contract validation, metadata storage, and reads; it does not yet prove complete portability. It should not attempt to ship a complete social network, video editor, streaming platform, or recommendation engine.
+The first milestone is intended to prove creator portability end to end. The current runnable slice demonstrates local contract validation, metadata storage, and reads; it does not yet prove complete portability. CreatorNetwork is the creator-facing Content Creator platform, but this repository's current runnable Node is only one local proving component—not the finished creator workspace or production network.
 
-> **Current status:** portable contracts, validation tests, and a loopback-only file-backed Creator Node prototype exist. Independent publisher/consumer applications and export/import are still in progress. The Node is for local development only, not a production multi-user host.
+> **Current status:** v1 portable channel contracts, additive v2 channel/publication models, validation tests, a runnable museum representation contract sample, and a loopback-only file-backed Creator Node prototype exist. The v2 contracts are not yet wired into the Node. Independent provider-backed publisher/consumer applications and export/import remain in progress.
 
 ## 1. Run the tests
 
-With the .NET 8 SDK installed, from the repository root:
+With the .NET 10 SDK installed, from the repository root:
 
 ```bash
 dotnet test tests/CreatorNetwork.Contracts.Tests/CreatorNetwork.Contracts.Tests.csproj -c Release
 ```
 
-This covers manifest validation and file-store persistence. It does not claim that the full network slice is complete.
+The repository CI also runs the Profiles integration tests, museum consumer sample, and benchmark build. See the [latest verified CI run](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/45754538338).
 
 ## 2. Start the local Creator Node
 
@@ -30,7 +30,9 @@ Check health:
 curl http://127.0.0.1:5080/health
 ```
 
-## 3. Publish a channel manifest
+## 3. Publish a v1 channel manifest
+
+The current local Node accepts the existing `creator-network.channel/1` shape. The additive v2 `CreatorChannel` and `PublicationSnapshot` contracts are validated in the contracts project but are not yet connected to Node persistence or HTTP routes.
 
 In a second terminal, save this sample as `channel.json`:
 
@@ -81,10 +83,12 @@ The response includes an ETag. Send it back with `If-None-Match` to test conditi
 
 ## What this prototype does—and does not—guarantee
 
-- It validates schema, identity references, revision, visibility declaration, timestamp, and content metadata.
-- It stores metadata locally and atomically replaces a manifest file.
-- It serves media bytes only for assets explicitly uploaded to the local `/v1/assets/{assetId}` endpoint; it does not automatically fetch `ContentReference.SourceUri` locations or prove cross-provider media migration. It does **not** enforce private/unlisted authorization, prove creator ownership, sign manifests, or provide a production authentication boundary.
+- It validates the v1 schema, identity references, revision, visibility declaration, timestamp, and content metadata.
+- It stores v1 metadata locally and atomically replaces a manifest file.
+- It serves media bytes only for assets explicitly uploaded to the local `/v1/assets/{assetId}` endpoint; it does not automatically fetch `ContentReference.SourceUri` locations or prove cross-provider media migration.
+- It does **not** enforce private/unlisted authorization, prove creator ownership, sign manifests, or provide a production authentication boundary.
 - It is bound to loopback and has no authentication. **Do not expose it to a network or use it for real private content.**
+- The v2 contract models do not yet have a persistence or HTTP implementation. The museum sample demonstrates provenance/rights-aware contract selection in memory, not remote provider delivery.
 - Metadata portability is not media-byte portability. Export/import and independent-client acceptance tests remain required.
 
 ## End-to-end acceptance criteria
@@ -96,11 +100,14 @@ The response includes an ETag. Send it back with `If-None-Match` to test conditi
 - Media portability is tested separately from metadata portability.
 - Missing media and unsupported manifest versions produce actionable errors.
 - At least two origins can serve the same publication contract.
-- A showcase experience consumes the publication through the contract rather than embedding content directly.
+- A showcase Experience consumes the publication through the contract rather than embedding content directly.
+- Unauthorized metadata and byte reads fail closed at the trusted host/provider boundary.
 
 ## What comes after the slice
 
-After the portability proof works, add signed publications, explicit permission enforcement, multiple discovery providers, subscription export, media replication, and improved streaming. Each addition needs a concrete consumer and a testable contract.
+The next implementation step is a provider-backed museum publication flow: publish a v2 snapshot that references an immutable Experience artifact and typed supporting resources, then resolve it from a separate consumer while preserving the current active Experience on failure. The local Experience artifact/catalog provider gap is tracked upstream in [MicroBundleRepository issue #22](https://github.com/TrentBest/TheSingularityWorkshop.MicroBundleRepository/issues/22); CreatorNetwork must reuse that provider boundary rather than create a competing artifact store.
+
+Later work can add signed publications, explicit sharing-policy enforcement, multiple discovery providers, subscription export, media replication, and improved streaming. Each addition needs a concrete consumer and a testable contract.
 
 ---
 

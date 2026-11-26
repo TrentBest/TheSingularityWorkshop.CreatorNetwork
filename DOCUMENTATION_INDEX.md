@@ -12,6 +12,7 @@ Use this index to find the right level of explanation. The README introduces the
 |---|---|
 | Understand the problem CreatorNetwork solves | [Theory learning path](docs/theory/README.md) · [Theory overview](docs/THEORY.md) |
 | See who owns each responsibility | [Architecture](docs/ARCHITECTURE.md) |
+| Understand the v1/v2 channel and publication model | [Publication contracts](docs/PUBLICATION_CONTRACTS.md) |
 | Understand provenance, source-work identity, museum reuse, approved representations, creator venues, royalties, and exploratory advertising | [Creator ecosystem model](docs/CREATOR_ECOSYSTEM_MODEL.md) · [Provenance and rights-aware representations](docs/PROVENANCE_AND_REPRESENTATIONS.md) |
 | Integrate profile identity and disclosure safely | [Profiles Integration](docs/PROFILES_INTEGRATION.md) |
 | Upload and retrieve a local recorded-media asset | [Local Media Assets](docs/MEDIA_ASSETS.md) |
@@ -24,7 +25,7 @@ Use this index to find the right level of explanation. The README introduces the
 
 ## The central model
 
-CreatorNetwork is the portable **distribution, publication, and trust plane** for creator-authored MicroBundles, Experiences, and typed resources. It connects stable artifact/Experience references and versioned publication metadata to replaceable repositories, discovery providers, and independent hosts. MicroBundleDomain defines capability meaning; MicroBundleRepository supplies artifact retrieval patterns; FSM_COS composes verified MicroBundle capabilities; Experiences owns authored composition and build/finalization; the host owns execution policy and manifestation. Media is one resource family, not the root abstraction. Profiles supplies identity/disclosure semantics, while trusted hosts/providers enforce authentication and authorization. The current channel/media endpoints remain a local proving slice, not proof that the general artifact/Experience lifecycle is complete. The additive provenance contract records asserted lineage; it does not prove authorship, completeness, or license.
+CreatorNetwork is the creator-facing **Content Creator platform** in The Singularity Workshop. It enables cross-platform creation by coordinating creator workflows across tools, devices, media, services, data, simulations, MicroBundles, and Experiences. Its core technical responsibility is the portable **distribution, publication, provenance/rights, and trust plane** connecting stable channel/publication references to replaceable repositories, discovery providers, and independent hosts. MicroBundleDomain defines capability meaning; MicroBundleRepository supplies artifact retrieval; FSM_COS composes verified MicroBundle capabilities; Experiences owns authored composition and build/finalization; UserIO and host-owned adapters handle semantic interaction and source acquisition; the host owns execution policy and manifestation. Media is one resource family, not the root abstraction. Profiles supplies identity/disclosure semantics, while trusted hosts/providers enforce authentication and authorization. The current channel/media endpoints remain a local proving slice, not proof that the general artifact/Experience lifecycle is complete.
 
 ## Documentation quality rule
 
