@@ -64,9 +64,9 @@ The publication contract is the portable center. Storage, discovery, delivery, a
 The current code proves important parts, not the complete platform:
 
 1. Validate provider-neutral provenance, rights, and representation declarations.
-2. Model a stable channel separately from immutable publication revisions.
-3. Reference a finalized Experience artifact by identity, version, and digest.
-4. Reference non-executable supporting resources without pretending they are MicroBundles or media storage.
+2. Validate and publish the single `ChannelPublication` contract.
+3. Preserve its creator, publication identity, revision, visibility, content references, and attribution consistently across producers and consumers.
+4. Keep provenance, rights evaluation, artifact storage, and media delivery behind their owning domain/provider boundaries.
 5. Run an in-memory museum consumer that selects a source-approved representation for a requested action.
 6. Exercise the local v1 Creator Node and its host authorization/conditional-write seams.
 
