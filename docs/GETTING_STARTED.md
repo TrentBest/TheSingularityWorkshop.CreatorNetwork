@@ -105,7 +105,7 @@ The response includes an ETag. Send it back with `If-None-Match` to test conditi
 
 ## What comes after the slice
 
-The next implementation step is a provider-backed museum publication flow: publish a `creator-network.channel/1` record that references an immutable Experience artifact and typed supporting resources, then resolve it from a separate consumer while preserving the current active Experience on failure. The local Experience artifact/catalog provider gap is tracked upstream in [MicroBundleRepository issue #22](https://github.com/TrentBest/TheSingularityWorkshop.MicroBundleRepository/issues/22); CreatorNetwork must reuse that provider boundary rather than create a competing artifact store.
+The next implementation step is a provider-backed museum publication flow using the existing `creator-network.channel/1` record end to end, then resolving it from a separate consumer while preserving the current active Experience on failure. The local Experience artifact/catalog provider gap is tracked upstream in [MicroBundleRepository issue #22](https://github.com/TrentBest/TheSingularityWorkshop.MicroBundleRepository/issues/22); CreatorNetwork must reuse that provider boundary rather than create a competing artifact store.
 
 Later work can add signed publications, explicit sharing-policy enforcement, multiple discovery providers, subscription export, media replication, and improved streaming. Each addition needs a concrete consumer and a testable contract.
 
