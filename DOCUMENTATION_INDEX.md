@@ -12,7 +12,7 @@ Use this index to find the right level of explanation. The README introduces the
 |---|---|
 | Understand the problem CreatorNetwork solves | [Theory learning path](docs/theory/README.md) · [Theory overview](docs/THEORY.md) |
 | See who owns each responsibility | [Architecture](docs/ARCHITECTURE.md) |
-| Understand the v1/v2 channel and publication model | [Publication contracts](docs/PUBLICATION_CONTRACTS.md) |
+| Understand the single publication contract | [Publication contracts](docs/PUBLICATION_CONTRACTS.md) |
 | Understand provenance, source-work identity, museum reuse, approved representations, creator venues, royalties, and exploratory advertising | [Creator ecosystem model](docs/CREATOR_ECOSYSTEM_MODEL.md) · [Provenance and rights-aware representations](docs/PROVENANCE_AND_REPRESENTATIONS.md) |
 | Integrate profile identity and disclosure safely | [Profiles Integration](docs/PROFILES_INTEGRATION.md) |
 | Upload and retrieve a local recorded-media asset | [Local Media Assets](docs/MEDIA_ASSETS.md) |
