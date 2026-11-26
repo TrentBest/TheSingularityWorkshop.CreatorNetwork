@@ -11,7 +11,7 @@ This document is the coordination contract for AI-assisted work in CreatorNetwor
 - Do not publish NuGet packages, deploy, enable public hosting, or launch monetization without explicit maintainer authorization.
 - A build, test, pack, artifact upload, benchmark result, or green CI run is not authorization to publish.
 - Report the exact commit, tests/workflows executed, and outcomes. Distinguish verified results from unverified implementation and design intent.
-- **One publication interface per release:** `creator-network.channel/1` is the sole current publication wire contract. Do not add `/v2`, a parallel DTO, a second schema identifier, or a compatibility generation alongside it. If a future breaking contract is justified, reconcile every producer, consumer, adapter, test, sample, and document as one coordinated release change; do not span interface generations within a release, especially a pre-release package. Preserve the current contract until that complete migration is ready.
+- **One publication interface per release:** `creator-network.channel/1` is the sole current publication wire contract. Do not add a second publication schema identifier, a parallel DTO, or a compatibility generation alongside it. If a future breaking contract is justified, reconcile every producer, consumer, adapter, test, sample, and document as one coordinated release change; do not span interface generations within a release, especially a pre-release package. Preserve the current contract until that complete migration is ready.
 
 ## Mandatory domain gate
 
