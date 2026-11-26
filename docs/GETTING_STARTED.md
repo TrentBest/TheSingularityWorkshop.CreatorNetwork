@@ -14,7 +14,7 @@ With the .NET 10 SDK installed, from the repository root:
 dotnet test tests/CreatorNetwork.Contracts.Tests/CreatorNetwork.Contracts.Tests.csproj -c Release
 ```
 
-The repository CI also runs the Profiles integration tests, museum consumer sample, and benchmark build. See the [latest verified CI run](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/45754538338).
+The repository CI also runs the Profiles integration tests, museum consumer sample, and benchmark build. See the [latest verified CI run](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/45755130931).
 
 ## 2. Start the local Creator Node
 

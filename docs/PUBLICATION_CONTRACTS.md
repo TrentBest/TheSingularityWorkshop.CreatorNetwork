@@ -57,9 +57,9 @@ Consumer capability compatibility belongs to the Experience manifest/resolver an
 - Tests prove an empty channel is valid, multiple revisions can share a stable channel/publication identity, resource collections are defensively snapshotted, and the v1 contract remains valid.
 - The Experience reference carries no provider URL, so its identity tuple is independent of a provider location.
 
-Verification on commit [`c70f6c5`](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/commit/c70f6c566d5a3e23ae56917c4329ac7a4f7a16fe):
-- [CreatorNetwork CI](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/45754538338) — passed, including contract/authoring/node tests, Profiles integration, museum consumer execution, and benchmark build.
-- [Sith Policy](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/45754538325) — passed.
+Verification on commit [`f26abc6`](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/commit/f26abc632271dcd61a7b7a82466ec1cc32712028):
+- [CreatorNetwork CI](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/45755130931) — passed, including contract/authoring/node tests, Profiles integration, museum consumer execution, and benchmark build.
+- [Sith Policy](https://github.com/TrentBest/TheSingularityWorkshop.CreatorNetwork/actions/runs/45755130920) — passed.
 
 ### Not yet implemented or proven
 
