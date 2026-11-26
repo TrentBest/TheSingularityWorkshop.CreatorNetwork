@@ -96,6 +96,26 @@ public sealed class PublicationSnapshotTests
     }
 
     [Fact]
+    public void DotOnlyExperienceVersionSegmentsAreRejected()
+    {
+        var publication = ValidPublication(
+            experience: new ExperienceArtifactReference(17, "..", new string('a', 64)));
+
+        Assert.Contains(PublicationSnapshotValidator.Validate(publication),
+            error => error.Code == "experience.version.invalid");
+    }
+
+    [Fact]
+    public void UppercaseDigestIsRejectedForCanonicalArtifactIdentity()
+    {
+        var publication = ValidPublication(
+            experience: new ExperienceArtifactReference(17, "2.1.0", new string('A', 64)));
+
+        Assert.Contains(PublicationSnapshotValidator.Validate(publication),
+            error => error.Code == "experience.sha256.invalid");
+    }
+
+    [Fact]
     public void ExistingV1ChannelContractRemainsValid()
     {
         var v1 = new ChannelPublication(

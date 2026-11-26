@@ -52,7 +52,7 @@ public static class PublicationSnapshotValidator
             if (string.IsNullOrWhiteSpace(resource.MediaType))
                 Add(ref errors, "resource.media_type.required", field + ".mediaType", "Provide the media type of the finalized resource.");
             if (!IsSha256(resource.Sha256))
-                Add(ref errors, "resource.sha256.invalid", field + ".sha256", "SHA-256 must contain exactly 64 hexadecimal characters.");
+                Add(ref errors, "resource.sha256.invalid", field + ".sha256", "SHA-256 must contain exactly 64 lowercase hexadecimal characters.");
             if (resource.LengthBytes < 0)
                 Add(ref errors, "resource.length.invalid", field + ".lengthBytes", "Byte length cannot be negative.");
             if (resource.RightsDeclarationId is not null && string.IsNullOrWhiteSpace(resource.RightsDeclarationId))
@@ -78,10 +78,15 @@ public static class PublicationSnapshotValidator
     {
         if (string.IsNullOrWhiteSpace(value) || value.Length > 128)
             return false;
+        if (value == "." || value == "..")
+            return false;
         for (int i = 0; i < value.Length; i++)
         {
             char c = value[i];
-            if (c == '/' || c == '\\' || char.IsControl(c))
+            bool allowed =
+                (c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') ||
+                (c >= '0' && c <= '9') || c == '.' || c == '-' || c == '+' || c == '_';
+            if (!allowed)
                 return false;
         }
         return true;
@@ -99,7 +104,7 @@ public static class PublicationSnapshotValidator
         for (int i = 0; i < value.Length; i++)
         {
             char c = value[i];
-            if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f') || (c >= 'A' && c <= 'F')))
+            if (!((c >= '0' && c <= '9') || (c >= 'a' && c <= 'f')))
                 return false;
         }
         return true;

@@ -26,7 +26,7 @@ The additive v2 model introduces:
 
 - `CreatorChannel` — stable `ChannelId`, creator projection, channel metadata, declared visibility, and creation/update timestamps. It does not contain a publication list; an empty channel is valid.
 - `PublicationSnapshot` — stable `PublicationId`, `ChannelId`, positive revision, publication-time metadata/visibility, a primary Experience artifact reference, and ordered supporting-resource references.
-- `ExperienceArtifactReference` — the Experiences domain's numeric identity, explicit artifact version, and SHA-256 digest. This matches the existing immutable Experience address tuple without importing MicroBundleRepository storage, transport, or catalog behavior.
+- `ExperienceArtifactReference` — the Experiences domain's numeric identity, explicit artifact version, and canonical lowercase SHA-256 digest. This matches the existing immutable Experience address tuple without importing MicroBundleRepository storage, transport, or catalog behavior.
 - `TypedResourceReference` — a stable resource ID, extensible type identifier, publication role, media type, SHA-256 digest, optional byte length, optional location hint, and optional provenance/rights declaration references.
 
 The v2 types are provider-neutral contract models. Their structural validators reject malformed identities, versions, digests, timestamps, and duplicate resource identities.
@@ -49,11 +49,11 @@ Consumer capability compatibility belongs to the Experience manifest/resolver an
 
 ## 5. Current implementation status
 
-<badge color="success">Implemented and CI-verified</badge>
+**Status: implemented and CI-verified**
 
 - v1 `ChannelPublication` remains unchanged.
 - v2 `CreatorChannel`, `PublicationSnapshot`, `ExperienceArtifactReference`, and `TypedResourceReference` exist as additive contract models.
-- Structural validators cover required fields, UTC timestamps, supported visibility values, positive publication revisions, path-safe Experience version segments, SHA-256 shape, and duplicate resource IDs.
+- Structural validators cover required fields, UTC timestamps, supported visibility values, positive publication revisions, path-safe Experience version segments, canonical lowercase SHA-256 shape, and duplicate resource IDs.
 - Tests prove an empty channel is valid, multiple revisions can share a stable channel/publication identity, resource collections are defensively snapshotted, and the v1 contract remains valid.
 - The Experience reference carries no provider URL, so its identity tuple is independent of a provider location.
 
